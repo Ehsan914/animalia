@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "prisma generate",
     "start": "tsx index.js",
     "dev": "tsx watch index.js",
     "prisma:generate": "prisma generate",
@@ -18,13 +19,12 @@
     "@prisma/client": "^7.7.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
-  },
-  "devDependencies": {
     "dotenv": "^17.4.2",
     "prisma": "^7.7.0",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
     "tsx": "^4.19.2"
-  }
+  },
+  "devDependencies": {}
 }
