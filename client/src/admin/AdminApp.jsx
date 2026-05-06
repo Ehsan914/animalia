@@ -20,7 +20,7 @@ const AdminApp = () => {
     return (
         <Routes>
             {/* Guest route - no sidebar */}
-            <Route path="/login" element={
+            <Route path="login" element={
                 <GuestRoute>
                     <LoginPage />
                 </GuestRoute>
@@ -32,16 +32,16 @@ const AdminApp = () => {
                     <AdminLayout />
                 </ProtectedRoute>
             }>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/services" element={<ServicesManager />} />
-                <Route path="/vets" element={<VetsManager />} />
-                <Route path="/blogs" element={<BlogsManager />} />
-                <Route path="/faqs" element={<FAQsManager />} />
-                <Route path="/emergency-contact" element={<EmergencyManager />} />
-                <Route path="/location" element={<LocationsManager />} />
-                <Route path="/reviews" element={<ReviewsManager />} />
-                <Route path="/contacts" element={<ContactsManager />} />
-                <Route path="/appointments" element={<AppointmentsManager />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="services" element={<ServicesManager />} />
+                <Route path="vets" element={<VetsManager />} />
+                <Route path="blogs" element={<BlogsManager />} />
+                <Route path="faqs" element={<FAQsManager />} />
+                <Route path="emergency-contact" element={<EmergencyManager />} />
+                <Route path="location" element={<LocationsManager />} />
+                <Route path="reviews" element={<ReviewsManager />} />
+                <Route path="contacts" element={<ContactsManager />} />
+                <Route path="appointments" element={<AppointmentsManager />} />
             </Route>
         </Routes>
     );
