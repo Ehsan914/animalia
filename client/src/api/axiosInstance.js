@@ -31,4 +31,6 @@ axiosInstance.interceptors.response.use(
     }
 )
 
+console.log('API URL:', import.meta.env.VITE_API_URL); 
+
 export default axiosInstance;
