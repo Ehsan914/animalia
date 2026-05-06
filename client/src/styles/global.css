@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Press+Start+2P&family=VT323&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-mc-primary:     #3E8E41;
+  --color-mc-grass:       #5DBE62;
+  --color-mc-sky:         #87CEEB;
+  --color-mc-wood:        #8B5A2B;
+  --color-mc-creeper:     #E8F5E9;
+  --color-mc-green-light: #C8E6C9;
+  --color-mc-heart:       #CC3E41;
+  --color-mc-emergency:   #D32F2F;
+  --color-mc-muted-red:   #E06E6E;
+  --color-mc-white:       #FFFFFF;
+  --color-mc-black:       #000000;
+  --color-mc-grey:        #B0B0B0;
+
+  --font-sans:      "Nunito", sans-serif;
+  --font-pixel:     "Press Start 2P", cursive;
+  --font-pixel-alt: "VT323", monospace;
+
+  --shadow-mc-sharp:    4px 4px 0px 0px #3e8e41;
+  --shadow-mc-sharp-b:    4px 4px 0px 0px #000000;
+  --shadow-mc-emergency: 4px 4px 0px 0px #E06E6E;
+  --shadow-mc-sharp-lg: 8px 8px 0px 0px #3e8e41;
+  --shadow-mc-sharp-lg-b: 8px 8px 0px 0px #000000;
+  --shadow-mc-flat:     2px 2px 0px 0px #3e8e41;
+  --shadow-mc-flat-b:   2px 2px 0px 0px #000000;
+
+  --breakpoint-nav: 800px;
+}
+
+:root {
+  --mc-primary:     #3E8E41;
+  --mc-grass:       #5DBE62;
+  --mc-sky:         #87CEEB;
+  --mc-wood:        #8B5A2B;
+  --mc-creeper:     #E8F5E9;
+  --mc-heart:       #CC3E41;
+  --mc-emergency:   #D32F2F;
+  --mc-shadow:      #1a1a1a;
+}
