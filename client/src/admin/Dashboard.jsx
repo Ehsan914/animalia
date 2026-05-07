@@ -117,7 +117,7 @@ const Dashboard = () => {
 
 
     return (
-        <div className="flex flex-col gap-7.5 px-7.5">
+        <div className="flex flex-col gap-7.5 px-7.5 pb-10">
             {/* Header */}
             <div className="w-full flex flex-col px-7.5 py-7 gap-3 bg-mc-grass border-4 border-mc-primary shadow-mc-sharp-lg-b">
                 <h1 className="font-pixel-alt text-[40px] leading-10">DASHBOARD</h1>
