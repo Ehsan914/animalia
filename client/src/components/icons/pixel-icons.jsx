@@ -126,3 +126,23 @@ export function FacebookIcon({ className = "" }) {
 export function Heart({ className = "" }) {
     return <img src={new URL('../icons/heart.svg', import.meta.url).href} className={className} alt="Heart" />;
 }
+
+export function AnimaliaLogo({ className = "" }) {
+    return <img src={new URL('../icons/animalia-pixelated.svg', import.meta.url).href} className={className} alt="AnimaliaLogo" />;
+}
+
+export function AnimaliaLogoGreen({ className = "" }) {
+    return <img src={new URL('../icons/animalia-green.svg', import.meta.url).href} className={className} alt="AnimaliaLogoGreen" />;
+}
+
+export function AnimaliaLogoWhite({ className = "" }) {
+    return <img src={new URL('../icons/animalia-white.svg', import.meta.url).href} className={className} alt="AnimaliaLogoWhite" />;
+}
+
+export function GreenPaw({ className = "" }) {
+    return <img src={new URL('../icons/green-paw.svg', import.meta.url).href} className={className} alt="GreenPaw" />;
+}
+
+export function WhitePaw({ className = "" }) {
+    return <img src={new URL('../icons/white-paw.svg', import.meta.url).href} className={className} alt="WhitePaw" />;
+}

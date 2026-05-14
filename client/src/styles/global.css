@@ -15,28 +15,28 @@
   --color-mc-black:       #000000;
   --color-mc-grey:        #B0B0B0;
 
-  --font-sans:      "Nunito", sans-serif;
-  --font-pixel:     "Press Start 2P", cursive;
-  --font-pixel-alt: "VT323", monospace;
+  --font-sans:            "Nunito", sans-serif;
+  --font-pixel:           "Press Start 2P", cursive;
+  --font-pixel-alt:       "VT323", monospace;
 
-  --shadow-mc-sharp:    4px 4px 0px 0px #3e8e41;
+  --shadow-mc-sharp:      4px 4px 0px 0px #3e8e41;
   --shadow-mc-sharp-b:    4px 4px 0px 0px #000000;
-  --shadow-mc-emergency: 4px 4px 0px 0px #E06E6E;
-  --shadow-mc-sharp-lg: 8px 8px 0px 0px #3e8e41;
+  --shadow-mc-emergency:  4px 4px 0px 0px #E06E6E;
+  --shadow-mc-sharp-lg:   8px 8px 0px 0px #3e8e41;
   --shadow-mc-sharp-lg-b: 8px 8px 0px 0px #000000;
-  --shadow-mc-flat:     2px 2px 0px 0px #3e8e41;
-  --shadow-mc-flat-b:   2px 2px 0px 0px #000000;
+  --shadow-mc-flat:       2px 2px 0px 0px #3e8e41;
+  --shadow-mc-flat-b:     2px 2px 0px 0px #000000;
 
-  --breakpoint-nav: 800px;
+  --breakpoint-nav:       800px;
 }
 
 :root {
-  --mc-primary:     #3E8E41;
-  --mc-grass:       #5DBE62;
-  --mc-sky:         #87CEEB;
-  --mc-wood:        #8B5A2B;
-  --mc-creeper:     #E8F5E9;
-  --mc-heart:       #CC3E41;
-  --mc-emergency:   #D32F2F;
-  --mc-shadow:      #1a1a1a;
+  --mc-primary:           #3E8E41;
+  --mc-grass:             #5DBE62;
+  --mc-sky:               #87CEEB;
+  --mc-wood:              #8B5A2B;
+  --mc-creeper:           #E8F5E9;
+  --mc-heart:             #CC3E41;
+  --mc-emergency:         #D32F2F;
+  --mc-shadow:            #1a1a1a;
 }

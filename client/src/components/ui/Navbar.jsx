@@ -2,7 +2,8 @@ import { Link, NavLink } from 'react-router';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Button from './Button';
-import { PixelPaw } from '../icons/pixel-icons';
+import { AnimaliaLogoGreen, GreenPaw, PixelPaw } from '../icons/pixel-icons';
+import { AnimaliaLogo } from '../icons/pixel-icons';
 
 export default function Navbar() {
     
@@ -21,11 +22,14 @@ export default function Navbar() {
         <nav className='sticky top-0 z-50 bg-white border-2 border-mc-primary shadow-mc-flat'>
             <div className='max-w-7xl mx-auto px-4 md:px-6 lg:px-8'>
                 <div className='flex items-center justify-between h-16 nav:h-20'>
-                    <Link to='/' className='flex gap-1'>
-                        <PixelPaw className='w-8 h-8 text-mc-primary'/>
+                    <Link to='/' className='flex items-center gap-2'>
+                        <AnimaliaLogoGreen className='w-12 h-10 text-mc-primary'/>
                         <div className='flex flex-col gap-1 font-pixel text-mc-primary'>
-                            <p className='m-0 text-xs'>Animalia</p>
-                            <p className='m-0 text-[10px]'>Vet Clinic</p>
+                            <p className='m-0 text-xs tracking-wide'>Animalia</p>
+                            <div className='flex items-center gap-2'>
+                                <p className='m-0 text-[10px]'>Vet Care</p>
+                                <GreenPaw className='w-2.5 h-2.5'/>
+                            </div>
                         </div>
                     </Link>
 

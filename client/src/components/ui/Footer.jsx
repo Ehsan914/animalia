@@ -1,4 +1,4 @@
-import { Heart, PixelHeart, PixelPaw } from "../icons/pixel-icons";
+import { AnimaliaLogoWhite, Heart, PixelHeart, PixelPaw, WhitePaw } from "../icons/pixel-icons";
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon } from '../icons/pixel-icons';
 
@@ -24,11 +24,14 @@ export default function Footer() {
                 <div className="grid grid-cols-1 nav:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="space-y-4">
-                        <Link to='/' className='flex gap-1'>
-                            <PixelPaw className='w-8 h-8 text-white'/>
+                        <Link to='/' className='flex items-center gap-2'>
+                            <AnimaliaLogoWhite className='w-12 h-10'/>
                             <div className='flex flex-col gap-1 font-pixel text-white'>
-                                <p className='m-0 text-xs'>Animalia</p>
-                                <p className='m-0 text-[10px]'>Vet Clinic</p>
+                                <p className='m-0 text-xs tracking-wide'>Animalia</p>
+                                <div className='flex items-center gap-2'>
+                                    <p className='m-0 text-[10px]'>Vet Care</p>
+                                    <WhitePaw className='w-2.5 h-2.5'/>
+                                </div>
                             </div>
                         </Link>
                         <p className="text-sm text-white/80">
