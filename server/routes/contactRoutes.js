@@ -22,12 +22,10 @@ router.put('/', auth, async(req, res) => {
     }
 
     try {
-        const contact = await prisma.contact.upsert({
-            where: { id: 1 },
-            update: { phone, email },
-            create: { phone, email }
-        });
-
+        const existing = await prisma.contact.findFirst()
+        const contact = existing
+            ? await prisma.contact.update({ where: { id: existing.id }, data: { phone, email } })
+            : await prisma.contact.create({ data: { phone, email } })
         res.status(200).json(contact);
 
     } catch (err) {

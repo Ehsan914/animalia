@@ -22,14 +22,12 @@ router.put('/', auth, async(req, res) => {
     }
 
     try {
-        const emergencyContact = await prisma.emergencyContact.upsert({
-            where: { id: 1 },
-            update: { phone, available24h },
-            create: { phone, available24h }
-        });
-
+        const existing = await prisma.emergencyContact.findFirst()
+        const emergencyContact = existing
+            ? await prisma.emergencyContact.update({ where: { id: existing.id }, data: { phone, available24h } })
+            : await prisma.emergencyContact.create({ data: { phone, available24h } })
+        
         res.status(200).json(emergencyContact);
-
     } catch (err) {
         console.log(err.message);
         res.status(500).json({ message: "Server error" });

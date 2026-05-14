@@ -22,13 +22,12 @@ router.put('/', auth, async(req, res) => {
     }
 
     try {
-        const location = await prisma.location.upsert({
-            where: { id: 1 },
-            update: { address, mapUrl },
-            create: { address, mapUrl }
-        });
-
-        res.status(200).json(location);
+        const existing = await prisma.location.findFirst()
+        const location = existing
+            ? await prisma.location.update({ where: { id: existing.id }, data: { address, mapUrl } })
+            : await prisma.location.create({ data: { address, mapUrl } })
+        
+        res.status(200).json(location)
 
     } catch (err) {
         console.log(err.message);
