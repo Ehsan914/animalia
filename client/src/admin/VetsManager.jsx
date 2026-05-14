@@ -81,7 +81,9 @@ const VetsManager = () => {
                 bio:            row.bio,
                 fun_fact:       row.fun_fact,
                 img_url:        row.img_url ?? "",
-                experience:     row.experience,
+                experience:     typeof row.experience === "string"
+                                ? parseInt(row.experience) || ""   // strips " years"
+                                : row.experience ?? "",
                 order:          row.order ?? "",
                 specialities: Array.isArray(row.specialities) ? row.specialities.map(s => s.id) : [],
             },
