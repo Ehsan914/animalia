@@ -1,8 +1,10 @@
-import EntityModal from "../admin/EntityModal"
+import { HeroSection } from "../components/home/hero-section"
 
 const HomePage = () => {
   return (
-    <div></div>
+    <div className="min-h-screen">
+      <HeroSection/>
+    </div>
   )
 }
 export default HomePage

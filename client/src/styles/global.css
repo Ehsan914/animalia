@@ -14,6 +14,7 @@
   --color-mc-white:       #FFFFFF;
   --color-mc-black:       #000000;
   --color-mc-grey:        #B0B0B0;
+  --color-mc-mint:        #D8F3DC;
 
   --font-sans:            "Nunito", sans-serif;
   --font-pixel:           "Press Start 2P", cursive;
@@ -39,4 +40,8 @@
   --mc-heart:             #CC3E41;
   --mc-emergency:         #D32F2F;
   --mc-shadow:            #1a1a1a;
+}
+
+.grass-pattern {
+  background: linear-gradient(to bottom, var(--mc-sky) 0%, var(--mc-sky) 60%, var(--mc-grass) 60%, var(--mc-grass) 70%, var(--mc-wood) 70%);
 }
