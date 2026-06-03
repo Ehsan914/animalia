@@ -5,6 +5,7 @@ import Button from "../components/ui/Button"
 import { PixelHeart } from "../components/icons/pixel-icons"
 import SpecialityCheckboxes from "../components/ui/SpecialityCheckbox"
 import ServiceCheckboxes from "../components/ui/Servicecheckboxes"
+import { SERVICE_ICON_MAP } from "../constants/serviceIcons"
 
 const EntityModal = ({
     fields = [],
@@ -46,6 +47,193 @@ const EntityModal = ({
     const headingText = title ?? (mode === "edit" ? `Edit ${entityLabel}` : `Add New ${entityLabel}`)
     const submitLabel = mode === "edit" ? "Confirm Edit" : `Add ${entityLabel}`
 
+    const renderField = (field) => {
+        if (field.type === "textarea") {
+            return (
+                <textarea
+                    value={formData[field.name] ?? ""}
+                    onChange={(e) => handleChange(field.name, "textarea", e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    rows={4}
+                    className="border-4 border-mc-primary bg-white px-3 py-3 text-sm font-sans font-medium resize-y"
+                />
+            )
+        }
+
+        if (field.type === "multiselect-creatable") {
+            return (
+                <SpecialityCheckboxes
+                    options={specialityOptions}
+                    selectedIds={formData[field.name] ?? []}
+                    onChange={(updated) => onChange(field.name, updated)}
+                    onAdd={field.onAdd}
+                    onDelete={field.onDelete}
+                />
+            )
+        }
+
+        if (field.type === "service-multiselect") {
+            return (
+                <ServiceCheckboxes
+                    options={serviceOptions}
+                    selectedIds={formData[field.name] ?? []}
+                    onChange={(updated) => onChange(field.name, updated)}
+                />
+            )
+        }
+
+        if (field.type === "checkbox") {
+            const isDisabled = field.disabledWhen ? field.disabledWhen(formData) : false
+            return (
+                <div className="flex flex-col gap-2">
+                    <div className={`flex gap-3 ${isDisabled ? "opacity-40 pointer-events-none" : ""}`}>
+                        <button
+                            type="button"
+                            onClick={() => onChange(field.name, true)}
+                            className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
+                                formData[field.name] === true
+                                    ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
+                                    : "border-mc-primary bg-white text-black"
+                            }`}
+                        >
+                            Publish
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onChange(field.name, false)}
+                            className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
+                                formData[field.name] === false || formData[field.name] === undefined
+                                    ? "border-mc-heart bg-red-600 text-white shadow-mc-flat-b"
+                                    : "border-mc-heart bg-white text-black"
+                            }`}
+                        >
+                            Unpublish
+                        </button>
+                    </div>
+                    {isDisabled && (
+                        <p className="text-xs font-sans text-black/40">
+                            Only approved reviews can be published.
+                        </p>
+                    )}
+                </div>
+            )
+        }
+
+        if (field.type === "approval") {
+            return (
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => onChange(field.name, true)}
+                        className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
+                            formData[field.name] === true || formData[field.name] === undefined
+                                ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
+                                : "border-mc-primary bg-white text-black"
+                        }`}
+                    >
+                        Approve
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onChange(field.name, false)}
+                        className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
+                            formData[field.name] === false
+                                ? "border-mc-heart bg-red-600 text-white shadow-mc-flat-b"
+                                : "border-mc-heart bg-white text-black"
+                        }`}
+                    >
+                        Reject
+                    </button>
+                </div>
+            )
+        }
+
+        if (field.type === "rating") {
+            return (
+                <div className="flex gap-1.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            onClick={() => onChange(field.name, i)}
+                            className="cursor-pointer hover:scale-110 transition-transform"
+                            aria-label={`Rate ${i}`}
+                        >
+                            <PixelHeart
+                                className={`w-6 h-6 ${
+                                    i <= (formData[field.name] || 0)
+                                        ? "text-mc-heart"
+                                        : "text-gray-300"
+                                }`}
+                            />
+                        </button>
+                    ))}
+                </div>
+            )
+        }
+
+        if (field.type === "icon-picker") {
+            return (
+                <div className="flex flex-wrap gap-2">
+                    {Object.entries(SERVICE_ICON_MAP).map(([key, entry]) => {
+                        const IconComponent = entry.Icon
+                        const isSelected = formData[field.name] === key
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => onChange(field.name, key)}
+                                title={entry.label}
+                                className={`flex flex-col items-center gap-1.5 px-3 py-2.5 border-4 transition-colors cursor-pointer ${
+                                    isSelected
+                                        ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
+                                        : "border-mc-primary bg-white text-black hover:bg-black/5"
+                                }`}
+                            >
+                                <IconComponent className="w-7 h-7" />
+                                <span className="text-[10px] font-pixel-alt leading-none">{entry.label}</span>
+                            </button>
+                        )
+                    })}
+                </div>
+            )
+        }
+
+        if (field.generateable) {
+            return (
+                <div className="flex border-4 border-mc-primary">
+                    <input
+                        type="text"
+                        value={formData[field.name] ?? ""}
+                        onChange={(e) => handleChange(field.name, "text", e.target.value)}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                        className="flex-1 bg-white px-3 py-3 text-sm font-sans font-medium outline-none"
+                    />
+                    <button
+                        type="button"
+                        onClick={onGenerateSlug}
+                        className="px-4 py-2 bg-mc-grass text-white font-pixel-alt text-[14px] border-l-4 border-mc-primary hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap"
+                    >
+                        Generate
+                    </button>
+                </div>
+            )
+        }
+
+        return (
+            <input
+                type={field.type}
+                value={formData[field.name] ?? ""}
+                onChange={(e) => handleChange(field.name, field.type, e.target.value)}
+                placeholder={field.placeholder}
+                required={field.required}
+                className="border-4 border-mc-primary bg-white px-3 py-3 text-sm font-sans font-medium"
+            />
+        )
+    }
+
     const modal = (
         <div
             ref={overlayRef}
@@ -78,140 +266,7 @@ const EntityModal = ({
                                         <span className="text-red-500 ml-1">*</span>
                                     )}
                                 </label>
-
-                                {field.type === "textarea" ? (
-                                    <textarea
-                                        value={formData[field.name] ?? ""}
-                                        onChange={(e) => handleChange(field.name, "textarea", e.target.value)}
-                                        placeholder={field.placeholder}
-                                        required={field.required}
-                                        rows={4}
-                                        className="border-4 border-mc-primary bg-white px-3 py-3 text-sm font-sans font-medium resize-y"
-                                    />
-                                ) : field.type === "multiselect-creatable" ? (
-                                    <SpecialityCheckboxes
-                                        options={specialityOptions}
-                                        selectedIds={formData[field.name] ?? []}
-                                        onChange={(updated) => onChange(field.name, updated)}
-                                        onAdd={field.onAdd}
-                                        onDelete={field.onDelete}
-                                    />
-                                ) : field.type === "service-multiselect" ? (
-                                    <ServiceCheckboxes
-                                        options={serviceOptions}
-                                        selectedIds={formData[field.name] ?? []}
-                                        onChange={(updated) => onChange(field.name, updated)}
-                                    />
-                                ) : field.type === "checkbox" ? (
-                                    (() => {
-                                        const isDisabled = field.disabledWhen ? field.disabledWhen(formData) : false
-                                        return (
-                                            <div className="flex flex-col gap-2">
-                                                <div className={`flex gap-3 ${isDisabled ? "opacity-40 pointer-events-none" : ""}`}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => onChange(field.name, true)}
-                                                        className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
-                                                            formData[field.name] === true
-                                                                ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
-                                                                : "border-mc-primary bg-white text-black"
-                                                        }`}
-                                                    >
-                                                        Publish
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => onChange(field.name, false)}
-                                                        className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
-                                                            formData[field.name] === false || formData[field.name] === undefined
-                                                                ? "border-mc-heart bg-red-600 text-white shadow-mc-flat-b"
-                                                                : "border-mc-heart bg-white text-black"
-                                                        }`}
-                                                    >
-                                                        Unpublish
-                                                    </button>
-                                                </div>
-                                                {isDisabled && (
-                                                    <p className="text-xs font-sans text-black/40">
-                                                        Only approved reviews can be published.
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )
-                                    })()
-                                ) : field.type === "approval" ? (
-                                    <div className="flex gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => onChange(field.name, true)}
-                                            className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
-                                                formData[field.name] === true || formData[field.name] === undefined
-                                                    ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
-                                                    : "border-mc-primary bg-white text-black"
-                                            }`}
-                                        >
-                                            Approve
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => onChange(field.name, false)}
-                                            className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
-                                                formData[field.name] === false
-                                                    ? "border-mc-heart bg-red-600 text-white shadow-mc-flat-b"
-                                                    : "border-mc-heart bg-white text-black"
-                                            }`}
-                                        >
-                                            Reject
-                                        </button>
-                                    </div>
-                                ) : field.type === "rating" ? (
-                                    <div className="flex gap-1.5">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <button
-                                                key={i}
-                                                type="button"
-                                                onClick={() => onChange(field.name, i)}
-                                                className="cursor-pointer hover:scale-110 transition-transform"
-                                                aria-label={`Rate ${i}`}
-                                            >
-                                                <PixelHeart
-                                                    className={`w-6 h-6 ${
-                                                        i <= (formData[field.name] || 0)
-                                                            ? "text-mc-heart"
-                                                            : "text-gray-300"
-                                                    }`}
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : field.generateable ? (
-                                    <div className="flex border-4 border-mc-primary">
-                                        <input
-                                            type="text"
-                                            value={formData[field.name] ?? ""}
-                                            onChange={(e) => handleChange(field.name, "text", e.target.value)}
-                                            placeholder={field.placeholder}
-                                            required={field.required}
-                                            className="flex-1 bg-white px-3 py-3 text-sm font-sans font-medium outline-none"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={onGenerateSlug}
-                                            className="px-4 py-2 bg-mc-grass text-white font-pixel-alt text-[14px] border-l-4 border-mc-primary hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap"
-                                        >
-                                            Generate
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <input
-                                        type={field.type}
-                                        value={formData[field.name] ?? ""}
-                                        onChange={(e) => handleChange(field.name, field.type, e.target.value)}
-                                        placeholder={field.placeholder}
-                                        required={field.required}
-                                        className="border-4 border-mc-primary bg-white px-3 py-3 text-sm font-sans font-medium"
-                                    />
-                                )}
+                                {renderField(field)}
                             </div>
                         ))}
                     </div>

@@ -9,17 +9,19 @@ import toast from 'react-hot-toast'
 
 const COLUMNS = [
     { key: "title",        label: "SERVICE NAME" },
-    { key: "description", label: "DESCRIPTION",  truncate: true },
-    { key: "price",       label: "PRICE" },
+    { key: "description",  label: "DESCRIPTION",  truncate: true },
+    { key: "price",        label: "PRICE" },
 ]
 
 const FORM_FIELDS = [
-    { name: "title",       label: "Service Name",                 type: "text",     required: true,  placeholder: "e.g., Vaccination Service" },
-    { name: "description", label: "Description",                  type: "textarea", required: true,  placeholder: "Enter service description..." },
-    { name: "price",       label: "Price",                        type: "number",   required: false, placeholder: "e.g., 500" },
-    { name: "img_url",     label: "Image URL",                    type: "url",      required: true,  placeholder: "https://example.com/image.jpg" },
-    { name: "features",    label: "Features (comma-separated)",   type: "textarea", required: false, placeholder: "e.g., Feature 1, Feature 2" },
-    { name: "order",       label: "Order",                        type: "number",   required: true,  placeholder: "e.g., 1" },
+    { name: "title",       label: "Service Name",                 type: "text",        required: true,  placeholder: "e.g., Vaccination Service" },
+    { name: "short_desc", label:  "Short Description",            type: "textarea",    required: true,  placeholder: "Enter service short description..." },
+    { name: "description", label: "Description",                  type: "textarea",    required: true,  placeholder: "Enter service description..." },
+    { name: "price",       label: "Price",                        type: "number",      required: false, placeholder: "e.g., 500" },
+    { name: "img_url",     label: "Image URL",                    type: "url",         required: true,  placeholder: "https://example.com/image.jpg" },
+    { name: "features",    label: "Features (comma-separated)",   type: "textarea",    required: false, placeholder: "e.g., Feature 1, Feature 2" },
+    { name: "icon_key",    label: "Icon",                         type: "icon-picker", required: true  },
+    { name: "order",       label: "Order",                        type: "number",      required: true,  placeholder: "e.g., 1" },
 ]
 
 // Build an empty formData object from the fields config
@@ -52,10 +54,12 @@ const ServicesManager = () => {
             mode: "edit",
             formData: {
                 title:       row.title,
+                short_desc:  row.short_desc ?? "",
                 description: row.description,
                 price:       row.price,
                 img_url:     row.img_url ?? "",
                 features:    Array.isArray(row.features) ? row.features.join(", ") : (row.features ?? ""),
+                icon_key:    row.icon_key ?? "stethoscope",
                 order:       row.order ?? "",
             },
             editingId: row.id,
@@ -88,7 +92,7 @@ const ServicesManager = () => {
                 toast.success('Service added successfully')
             } else {
                 const result = await execute(updateService, modalState.editingId, payload)
-                setServices((prev) => 
+                setServices((prev) =>
                     prev.map((s) => s.id === modalState.editingId ? result : s)
                 )
                 toast.success('Service saved successfully')
@@ -97,7 +101,6 @@ const ServicesManager = () => {
             closeModal()
         } catch (err) {
             toast.error('Error: ' + err)
-            
         }
     }
 

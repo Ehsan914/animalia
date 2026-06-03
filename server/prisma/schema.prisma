@@ -43,10 +43,12 @@ model Speciality {
 model Service {
   id            Int      @id @default(autoincrement())
   title         String
+  short_desc    String   @default("")
   description   String   @db.Text
   price         Float
   order         Int
   img_url       String
+  icon_key      String   @default("stethoscope")
   features      String[]
   appointments  AppointmentService[]
   @@map("services")

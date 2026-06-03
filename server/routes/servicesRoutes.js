@@ -12,7 +12,7 @@ router.get('/', async(req, res) => {
                 order: 'asc'
             }
         });
-
+        res.set('Cache-Control', 'public, max-age=600');
         res.json(services);
     } catch (err) {
         console.log(err.message);
@@ -22,7 +22,7 @@ router.get('/', async(req, res) => {
 
 router.post('/', auth, async(req, res) => {
     
-    const { title, description, price, img_url, features } = req.body;
+    const { title, short_desc, description, price, img_url, features, icon_key } = req.body;
 
     const order = parseInt(req.body.order);
     if (isNaN(order) || order < 1) {
@@ -32,18 +32,20 @@ router.post('/', auth, async(req, res) => {
     try {
 
         //Validation
-        if(!title || !description || !img_url || !features || order === undefined) {
+        if(!title || !short_desc || !description || !img_url || !features || order === undefined) {
             return res.status(400).json({ message: 'Missing required fields' }) 
         }
 
         const service = await prisma.service.create({
             data: {
                 title,
+                short_desc,
                 description, 
                 price, 
                 img_url, 
                 features,
-                order
+                order,
+                icon_key: icon_key || "stethoscope",
             }
         })
 
@@ -54,7 +56,7 @@ router.post('/', auth, async(req, res) => {
     }
 })
 
-// PUT /api/faqs/reorder
+// PUT /api/services/reorder
 router.put('/reorder', auth, async(req, res) => {
     
     // expects body: { items: [{id: 1, order: 1}, {id: 2, order: 2}, ...] }
@@ -79,7 +81,7 @@ router.put('/reorder', auth, async(req, res) => {
 
 router.put('/:id', auth, async(req, res) => {
     
-    const { title, description, price, img_url, features } = req.body;
+    const { title, short_desc, description, price, img_url, features, icon_key } = req.body;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID" });
@@ -92,10 +94,12 @@ router.put('/:id', auth, async(req, res) => {
             },
             data: {
                 title,
+                short_desc,
                 description, 
                 price, 
                 img_url, 
                 features,
+                icon_key: icon_key || "stethoscope",
             }
         })
 
