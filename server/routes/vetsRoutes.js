@@ -26,7 +26,7 @@ router.get('/', async(req, res) => {
 
 router.post('/', auth, async(req, res) => {
 
-    const { name, degree, designation, bio, fun_fact, img_url, experience, specialityIds } = req.body;
+    const { name, degree, designation, short_bio, bio, fun_fact, img_url, experience, specialityIds } = req.body;
     const order = parseInt(req.body.order);
     if (isNaN(order) || order < 1) {
         return res.status(400).json({ message: "Invalid order value" });
@@ -34,7 +34,7 @@ router.post('/', auth, async(req, res) => {
 
     try {
         //Validation
-        if (!name || !degree || !designation || !bio || !img_url || !experience || order === undefined) {
+        if (!name || !degree || !designation || !short_bio || !bio || !img_url || !experience || order === undefined) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -42,7 +42,8 @@ router.post('/', auth, async(req, res) => {
             data: {
                 name, 
                 degree, 
-                designation, 
+                designation,
+                short_bio,
                 bio, 
                 fun_fact, 
                 img_url, 
@@ -89,7 +90,7 @@ router.put('/reorder', auth, async(req, res) => {
 
 router.put('/:id', auth, async(req, res) => {
     
-    const { name, degree, designation, bio, fun_fact, img_url, experience, specialityIds } = req.body;
+    const { name, degree, designation, short_bio, bio, fun_fact, img_url, experience, specialityIds } = req.body;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID" });
@@ -103,7 +104,8 @@ router.put('/:id', auth, async(req, res) => {
             data: {
                 name, 
                 degree, 
-                designation, 
+                designation,
+                short_bio,
                 bio, 
                 fun_fact, 
                 img_url, 

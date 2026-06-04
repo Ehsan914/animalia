@@ -24,6 +24,7 @@ model Vet {
   name          String
   degree        String
   designation   String
+  short_bio     String   @default("")
   bio           String   @db.Text
   fun_fact      String
   img_url       String
