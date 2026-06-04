@@ -146,3 +146,7 @@ export function GreenPaw({ className = "" }) {
 export function WhitePaw({ className = "" }) {
     return <img src={new URL('../icons/white-paw.svg', import.meta.url).href} className={className} alt="WhitePaw" />;
 }
+
+export function Phone({ className = "" }) {
+    return <img src={new URL('../icons/phone.svg', import.meta.url).href} className={className} alt="Phone" />;
+}

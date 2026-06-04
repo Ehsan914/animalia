@@ -5,6 +5,7 @@ import { ServicesSection } from "../components/home/services-section"
 import { getServices } from '../api/services'
 import { getVets } from '../api/vets'
 import { VetsSection } from "../components/home/vets-section"
+import { EmergencyBanner } from "../components/home/emergency-banner"
 
 const HomePage = () => {
     const { execute: fetchServices, loading: servicesLoading } = useFetch()
@@ -25,6 +26,7 @@ const HomePage = () => {
         <HeroSection/>
         <ServicesSection services={services.slice(0, 6)} loading={servicesLoading} />
         <VetsSection vets={vets} loading={vetsLoading}/>
+        <EmergencyBanner />
       </div>
     )
 }
