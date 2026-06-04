@@ -36,7 +36,7 @@ export function EmergencyBanner() {
                     to="/contact"
                     className="text-white font-sans font-bold hover:underline text-sm"
                     >
-                        <span className="mr-2">Or</span> Visit our clinic →
+                        Or visit our clinic →
                     </Link>
                 </div>
                 </div>
