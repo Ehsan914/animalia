@@ -15,7 +15,7 @@ const values = [
   {
     icon: Stethoscope,
     title: "Care",
-    description: "We maintain the highest standards in veterinary medicine and continuous education.",
+    description: "We provide attentive, personalized care to ensure every pet feels safe, comfortable, and loved.",
   },
   {
     icon: PixelMedical,
