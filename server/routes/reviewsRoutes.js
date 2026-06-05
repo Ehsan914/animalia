@@ -23,16 +23,18 @@ router.get('/', async(req, res) => {
 
 router.post('/', async(req, res) => {
     
-    const {author, text, rating} = req.body;
+    const {author, pet_name, species, text, rating} = req.body;
 
     try {
-        if (!author || !text || !rating) {
+        if (!author || !pet_name || !species || !text || !rating) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
         const review = await prisma.review.create({
             data: {
                 author,
+                pet_name,
+                species,
                 text,
                 rating,
                 status: "pending"
@@ -61,14 +63,14 @@ router.get('/admin', auth, async(req, res) => {
 
 router.post('/admin', auth, async(req, res) => {
     
-    const {author, text} = req.body;
+    const {author, pet_name, species, text} = req.body;
     const rating = parseFloat(req.body.rating); // or parseInt
     if (isNaN(rating) || rating < 1 || rating > 5) {
         return res.status(400).json({ message: "Invalid rating value" });
     }
 
     try {
-        if (!author || !text || !rating) {
+        if (!author || !pet_name || !species || !text || !rating) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -91,7 +93,7 @@ router.post('/admin', auth, async(req, res) => {
 
 router.put("/:id", auth, async(req, res) => {
     
-    const {author, text, rating, status, published} = req.body;
+    const {author, pet_name, species, text, rating, status, published} = req.body;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid ID" });
@@ -104,6 +106,8 @@ router.put("/:id", auth, async(req, res) => {
             },
             data: {
                 author,
+                pet_name,
+                species,
                 text,
                 rating,
                 status,

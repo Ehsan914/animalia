@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import Button from "../components/ui/Button"
-import { PixelHeart } from "../components/icons/pixel-icons"
+import { Heart, HeartOff } from "../components/icons/pixel-icons"
 import SpecialityCheckboxes from "../components/ui/SpecialityCheckbox"
 import ServiceCheckboxes from "../components/ui/Servicecheckboxes"
 import { SERVICE_ICON_MAP } from "../constants/serviceIcons"
@@ -160,13 +160,18 @@ const EntityModal = ({
                             className="cursor-pointer hover:scale-110 transition-transform"
                             aria-label={`Rate ${i}`}
                         >
-                            <PixelHeart
-                                className={`w-6 h-6 ${
+                            {
                                     i <= (formData[field.name] || 0)
-                                        ? "text-mc-heart"
-                                        : "text-gray-300"
-                                }`}
-                            />
+                                    ? 
+                                    <Heart
+                                    className={`w-6 h-6`}
+                                    />
+                                    :
+                                    <HeartOff 
+                                    className={`w-6 h-6`}
+                                    />
+                            }
+                            
                         </button>
                     ))}
                 </div>

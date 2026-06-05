@@ -17,7 +17,6 @@ function VetCardSkeleton() {
 }
 
 export function VetsSection({ vets = [], loading = false }) {
-    console.log(vets)
     return (
         <section className="py-20 bg-mc-creeper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

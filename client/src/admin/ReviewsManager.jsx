@@ -6,7 +6,7 @@ import EntityModal from "./EntityModal"
 import useFetch from "../hooks/useFetch"
 import { getAllReviews, createReviewAdmin, updateReview, deleteReview } from "../api/misc"
 import toast from "react-hot-toast"
-import { PixelHeart } from "../components/icons/pixel-icons"
+import { Heart, HeartOff } from "../components/icons/pixel-icons"
 
 const COLUMNS = [
     { key: "author",         label: "NAME" },
@@ -38,7 +38,11 @@ const emptyForm = () => ({ author: "", rating: "", text: "", published: false, s
 const StarRating = ({ rating }) => (
     <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((i) => (
-            <PixelHeart key={i} className={`w-4 h-4 ${i <= rating ? "text-mc-heart" : "text-gray-300"}`} />
+            
+            i <= rating ? 
+                <Heart key={i} className={`w-4 h-4`} />
+            :
+                <HeartOff key={i} className="w-4 h-4" />
         ))}
     </div>
 )
@@ -181,11 +185,15 @@ const ReviewsManager = () => {
                             <div className="flex justify-between">
                                 <div className="flex flex-col gap-1.5">
                                     <h1 className="font-sans font-semibold">Reviewer: {review.author}</h1>
+                                    <h1 className="font-sans font-semibold">Pet Name: {review.pet_name}</h1>
+                                    <h1 className="font-sans font-semibold">Species: {review.species}</h1>
                                     <span className="font-sans font-semibold flex items-center gap-2">Rating: <StarRating rating={review.rating} /></span>
                                 </div>
-                                <span className="font-pixel-alt text-[20px] text-mc-heart px-3 py-2 bg-red-200 border shadow-mc-flat-b">
-                                    Pending
-                                </span>
+                                <div>
+                                    <span className="flex font-pixel-alt text-[20px] text-mc-heart px-3 py-2 bg-red-200 border shadow-mc-flat-b">
+                                        Pending
+                                    </span>
+                                </div>
                             </div>
                             <div className="flex flex-col gap-2">
                                     <span className="font-sans font-black">Message:</span>
