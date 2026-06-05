@@ -17,7 +17,7 @@ export function HeroSection() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="max-w-3xl">
             {/* Pixel badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-sharp mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-8">
                 <PixelPaw className="w-5 h-5 text-mc-primary" />
                 <span className="text-sm font-medium text-black">Professional Pet Care</span>
             </div>

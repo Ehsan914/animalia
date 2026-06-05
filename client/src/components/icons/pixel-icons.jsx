@@ -126,8 +126,13 @@ export function FacebookIcon({ className = "" }) {
 export function Heart({ className = "" }) {
     return <img src={new URL('../icons/heart.svg', import.meta.url).href} className={className} alt="Heart" />;
 }
+
 export function HeartOff({ className = "" }) {
     return <img src={new URL('../icons/heart-off.svg', import.meta.url).href} className={className} alt="HeartOff" />;
+}
+
+export function HeartWhite({ className = "" }) {
+    return <img src={new URL('../icons/heart-white.svg', import.meta.url).href} className={className} alt="HeartWhite" />;
 }
 
 export function AnimaliaLogo({ className = "" }) {
