@@ -5,7 +5,7 @@ import Button from "../ui/Button"
 
 function TestimonialSkeleton() {
     return (
-        <div className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 flex flex-col min-w-75 w-75in-w-[360px] md:w-90 animate-pulse">
+        <div className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 flex flex-col min-w-75 w-75 md:w-90 animate-pulse">
             {/* Rating shimmer */}
             <div className="flex gap-1 mb-4">
                 {Array.from({ length: 5 }).map((_, i) => (
