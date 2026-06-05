@@ -19,7 +19,7 @@ const FORM_FIELDS = [
     { name: "description", label: "Description",                  type: "textarea",    required: true,  placeholder: "Enter service description..." },
     { name: "price",       label: "Price",                        type: "number",      required: false, placeholder: "e.g., 500" },
     { name: "img_url",     label: "Image URL",                    type: "url",         required: true,  placeholder: "https://example.com/image.jpg" },
-    { name: "features",    label: "Features (comma-separated)",   type: "textarea",    required: false, placeholder: "e.g., Feature 1, Feature 2" },
+    { name: "features",    label: "Features (semicolon-separated)",   type: "textarea",    required: false, placeholder: "e.g., Feature 1, Feature 2" },
     { name: "icon_key",    label: "Icon",                         type: "icon-picker", required: true  },
     { name: "order",       label: "Order",                        type: "number",      required: true,  placeholder: "e.g., 1" },
 ]
@@ -58,7 +58,7 @@ const ServicesManager = () => {
                 description: row.description,
                 price:       row.price,
                 img_url:     row.img_url ?? "",
-                features:    Array.isArray(row.features) ? row.features.join(", ") : (row.features ?? ""),
+                features:    Array.isArray(row.features) ? row.features.join("; ") : (row.features ?? ""),
                 icon_key:    row.icon_key ?? "stethoscope",
                 order:       row.order ?? "",
             },
@@ -83,7 +83,7 @@ const ServicesManager = () => {
                     ? 0
                     : Number(data.price),
                 features: typeof data.features === "string"
-                    ? data.features.split(",").map((f) => f.trim()).filter(Boolean)
+                    ? data.features.split(";").map((f) => f.trim()).filter(Boolean)
                     : data.features ?? [],
             }
             if (modalState.mode === 'add') {

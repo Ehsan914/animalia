@@ -21,7 +21,7 @@ router.get('/', async(req, res) => {
                 answerEn: true,
             }
         });
-
+        res.set('Cache-Control', 'public, max-age=600');
         res.json(faqs);
     } catch (err) {
         console.log(err.message);

@@ -41,7 +41,7 @@ export function ServicesSection({ services = [], loading = false }) {
                             return (
                                 <Link
                                     key={service.id}
-                                    to={`/services#${service.id}`}
+                                    to={`/services#service-${service.id}`}
                                     className="group bg-mc-creeper p-6 border-4 border-mc-primary shadow-mc-sharp hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                                 >
                                     <div className="flex flex-col items-start">

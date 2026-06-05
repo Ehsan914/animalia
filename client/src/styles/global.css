@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Press+Start+2P&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Press+Start+2P&family=VT323&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -16,8 +16,8 @@
   --color-mc-grey:        #B0B0B0;
   --color-mc-mint:        #D8F3DC;
 
-  --font-sans:            "Nunito", sans-serif;
-  --font-pixel:           "Press Start 2P", cursive;
+  --font-pixel:           "Press Start 2P", "Hind Siliguri", cursive;
+  --font-sans:            "Nunito", "Hind Siliguri", sans-serif;
   --font-pixel-alt:       "VT323", monospace;
 
   --shadow-mc-sharp:      4px 4px 0px 0px #3e8e41;
