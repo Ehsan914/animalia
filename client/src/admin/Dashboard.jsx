@@ -120,8 +120,8 @@ const Dashboard = () => {
         <div className="flex flex-col gap-7.5 px-7.5 pb-10">
             {/* Header */}
             <div className="w-full flex flex-col px-7.5 py-7 gap-3 bg-mc-grass border-4 border-mc-primary shadow-mc-sharp-lg-b">
-                <h1 className="font-pixel-alt text-[40px] leading-10">DASHBOARD</h1>
-                <p className="font-sans font-bold text-[16px]">Welcome to your admin panel</p>
+                <h1 className="font-pixel-alt text-[40px] text-white leading-10">DASHBOARD</h1>
+                <p className="font-sans font-bold text-white text-[16px]">Welcome to your admin panel</p>
             </div>
 
             {/* Stat cards — equal width/height, responsive wrap */}

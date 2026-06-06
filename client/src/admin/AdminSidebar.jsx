@@ -34,7 +34,7 @@ const AdminSidebar = () => {
             <div className="flex flex-col gap-5">
 
                 {/* Sidebar Header */}
-                <div className="font-pixel-alt text-xl font-medium pl-6.5 py-6 border-b-4 border-mc-primary bg-mc-grass">
+                <div className="font-pixel-alt text-white text-xl font-medium pl-6.5 py-6 border-b-4 border-mc-primary bg-mc-grass">
                     <span>ANIMALIA<br/>ADMIN PANEL</span>
                 </div>
 
