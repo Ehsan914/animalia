@@ -337,9 +337,11 @@ const AppointmentsManager = () => {
                                         Services: {apt.servicesLabel}
                                     </h1>
                                 </div>
-                                <span className="flex items-center font-pixel-alt text-[20px] text-mc-heart px-3 py-2 bg-red-200 border shadow-mc-flat-b">
-                                    Pending
-                                </span>
+                                <div>
+                                    <span className="flex items-center font-pixel-alt text-[20px] text-mc-heart px-3 py-2 bg-red-200 border shadow-mc-flat-b">
+                                        Pending
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Message */}
