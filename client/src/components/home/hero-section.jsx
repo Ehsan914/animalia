@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import Button from '../ui/Button';
 import { PixelPaw, PixelHeart } from "../icons/pixel-icons"
-import vetTeamImage from '../../public/Vet Easin &  Vet Noor.png'
+import vetTeamImage from '../../public/Vet Easin &  Vet Noor 1.png'
 
 export function HeroSection() {
     return (
