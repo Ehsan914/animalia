@@ -53,12 +53,12 @@ const ContactSection = () => {
                             </h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-black">Saturday – Friday</span>
-                                    <span className="font-medium text-black">9:00 AM – 6:00 PM</span>
+                                    <span className="text-black font-bold">Saturday – Friday</span>
+                                    <span className="font-bold text-black">9:00 AM – 6:00 PM</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-mc-emergency font-medium">Emergency Services</span>
-                                    <span className="font-medium text-mc-emergency">24/7 Available</span>
+                                    <span className="text-mc-emergency font-bold">Emergency Services</span>
+                                    <span className="font-bold text-mc-emergency">24/7 Available</span>
                                 </div>
                             </div>
                         </div>
@@ -88,12 +88,14 @@ const ContactSection = () => {
                             <Link to="/appointment">
                                 <Button className="w-full">Book Visit</Button>
                             </Link>
-                            <a
-                                href="tel:+8801879388068"
-                                className="bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-                            >
-                                <p className="font-pixel text-[10px] text-white">Emergency</p>
-                            </a>
+                            <Button className="w-full bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all ">
+                                <a
+                                    href="tel:+8801879388068"
+                                >
+                                    <p className="font-pixel text-[10px] text-white">Emergency</p>
+                                </a>
+                            </Button>
+                            
                         </div>
                     </div>
                 </div>

@@ -184,14 +184,14 @@ export default function ContactPage() {
                     Book Visit
                   </Button>
                 </Link>
-                <a
-                  href="tel:+8801879388068"
-                  className="bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-                >
-                  <p className="font-pixel text-[10px] text-white">
-                    Emergency
-                  </p>
-                </a>
+                <Button className="w-full bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center">
+                    <a  
+                    href="tel:+8801879388068"
+                    >
+                      <p className="font-pixel text-[10px] text-white">Emergency</p>
+                    </a>
+                </Button>
+                                                  
               </div>
             </div>
           </div>
