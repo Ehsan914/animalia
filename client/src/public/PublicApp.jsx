@@ -7,6 +7,7 @@ import BlogDetailPage from '../pages/BlogDetailPage';
 import AboutPage from '../pages/AboutPage';
 import ContactPage from '../pages/ContactPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import AppointmentPage from "../pages/AppointmentPage";
 
 const PublicApp = () => {
     return (
@@ -18,6 +19,7 @@ const PublicApp = () => {
             <Route path="/blogs/:slug" element={<BlogDetailPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/appointment" element={<AppointmentPage />} />
             <Route path="*" element={<NotFoundPage />} />
         </Routes>
     )

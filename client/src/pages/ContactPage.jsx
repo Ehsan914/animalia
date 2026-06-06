@@ -142,12 +142,12 @@ export default function ContactPage() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-black">Saturday - Friday</span>
-                    <span className="font-medium text-black">9:00 AM - 6:00 PM</span>
+                    <span className="text-black font-bold">Saturday - Friday</span>
+                    <span className="font-bold text-black">10:00 AM - 9:00 PM</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-mc-emergency font-medium">Emergency Services</span>
-                    <span className="font-medium text-mc-emergency">24/7 Available</span>
+                    <span className="text-mc-emergency font-bold">Emergency Services</span>
+                    <span className="font-bold text-mc-emergency">24/7 Available</span>
                   </div>
                   
                 </div>
