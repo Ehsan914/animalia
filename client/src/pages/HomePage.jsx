@@ -8,6 +8,7 @@ import { getReviews } from "../api/misc"
 import { VetsSection } from "../components/home/vets-section"
 import { EmergencyBanner } from "../components/home/emergency-banner"
 import { TestimonialsSection } from "../components/home/testimonials-section"
+import ContactSection from "../components/home/contact-section"
 
 const HomePage = () => {
     const { execute: fetchServices, loading: servicesLoading } = useFetch()
@@ -30,13 +31,14 @@ const HomePage = () => {
     }, [fetchTestimonials])
 
     return (
-      <div className="min-h-screen">
-        <HeroSection/>
-        <ServicesSection services={services.slice(0, 6)} loading={servicesLoading} />
-        <VetsSection vets={vets} loading={vetsLoading}/>
-        <TestimonialsSection testimonials={testimonials} loading={testimonialsLoading}/>
-        <EmergencyBanner />
-      </div>
+        <div className="min-h-screen">
+            <HeroSection/>
+            <ServicesSection services={services.slice(0, 6)} loading={servicesLoading} />
+            <VetsSection vets={vets} loading={vetsLoading}/>
+            <TestimonialsSection testimonials={testimonials} loading={testimonialsLoading}/>
+            <ContactSection />
+            <EmergencyBanner />
+        </div>
     )
 }
 export default HomePage

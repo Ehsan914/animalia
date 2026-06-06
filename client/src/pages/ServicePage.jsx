@@ -207,7 +207,7 @@ const ServicesPage = () => {
                 >
                   BN
                 </button>
-              </div>
+            </div>
           </div>
 
           

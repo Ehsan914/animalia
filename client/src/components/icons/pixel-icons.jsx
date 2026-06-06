@@ -158,3 +158,7 @@ export function WhitePaw({ className = "" }) {
 export function Phone({ className = "" }) {
     return <img src={new URL('../icons/phone.svg', import.meta.url).href} className={className} alt="Phone" />;
 }
+
+export function WhatsApp({ className = "" }) {
+    return <img src={new URL('../icons/whatsapp.png', import.meta.url).href} className={className} alt="WhatsApp" />;
+}

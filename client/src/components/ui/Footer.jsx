@@ -38,7 +38,8 @@ export default function Footer() {
                             Compassionate care for your beloved pets. Professional veterinary services you can trust.
                         </p>
                         <div className="flex gap-4">
-                            <FacebookIcon className="w-8 h-8" />  
+                            <a href="https://www.facebook.com/profile.php?id=61588473520737">
+                            <FacebookIcon className="w-8 h-8" />  </a>
                             <InstagramIcon className="w-8 h-8" />
                         </div>
                     </div>
@@ -81,9 +82,9 @@ export default function Footer() {
                     <div>
                         <h3 className="font-pixel text-[10px] mb-4 text-white">Contact</h3>
                         <ul className="space-y-2 text-sm text-white/80">
-                            <li>Oli Miar Tek , Shewrapara<br/> Mirpur Dhaka</li>
+                            <li>Ekushey Vobon, 677 West Shewrapara<br/> Mirpur, Dhaka 1216 <br/>(Beside Shewrapara Metro Station)</li>
                             <li>Phone Number: 01533829537</li>
-                            <li>Email: veteasin@animalia.com</li>
+                            <li>Email: animaliavetcare25@gmail.com</li>
                             <li>
                                 <span className="font-semibold text-white">Emergency: 24/7</span>
                             </li>
