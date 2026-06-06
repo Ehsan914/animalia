@@ -93,7 +93,7 @@ export function HeroSection() {
             <div className="hidden banner:block absolute z-30 bottom-8 nav-bottom-2 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-6 lg:px-8">
                 <div className="bg-[#c0392b] shadow-mc-heart flex items-center justify-between px-8 py-5 shadow-lg">
                     <span className="font-pixel text-white text-lg sm:text-xl tracking-wide">
-                        FREE Rabies Vaccination
+                        Free Rabies Vaccination
                     </span>
                     <span className="font-sans text-white text-base sm:text-lg font-medium">
                         7-13th June
@@ -104,7 +104,7 @@ export function HeroSection() {
             {/* Promotion banner */}
             <div className="banner:hidden relative z-10 w-full bg-[#c0392b] flex flex-col gap-5 items-center justify-between px-8 py-5">
                 <span className="font-pixel text-white text-center text-lg sm:text-xl tracking-wide">
-                    FREE Rabies Vaccination
+                    Free Rabies Vaccination
                 </span>
                 <span className="font-sans text-white text-base sm:text-lg font-medium">
                     7-13th June
