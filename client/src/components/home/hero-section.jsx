@@ -107,7 +107,7 @@ export function HeroSection() {
                     Free Rabies Vaccination
                 </span>
                 <span className="font-sans text-white text-base sm:text-lg font-medium">
-                    14-24th June
+                    7-13th June
                 </span>
             </div>
         </section>
