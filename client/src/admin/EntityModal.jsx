@@ -205,6 +205,30 @@ const EntityModal = ({
             )
         }
 
+        if (field.type === "options") {
+            return (
+                <div className="flex flex-wrap gap-2">
+                    {field.options.map((opt) => {
+                        const isSelected = formData[field.name] === opt.value
+                        return (
+                            <button
+                                key={String(opt.value)}
+                                type="button"
+                                onClick={() => onChange(field.name, opt.value)}
+                                className={`px-4 py-2 border-4 font-pixel-alt text-[16px] transition-colors cursor-pointer ${
+                                    isSelected
+                                        ? "border-mc-primary bg-mc-grass text-white shadow-mc-flat-b"
+                                        : "border-mc-primary bg-white text-black hover:bg-black/5"
+                                }`}
+                            >
+                                {opt.label}
+                            </button>
+                        )
+                    })}
+                </div>
+            )
+        }
+
         if (field.generateable) {
             return (
                 <div className="flex border-4 border-mc-primary">

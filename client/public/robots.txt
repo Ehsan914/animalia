@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /*.js
+Disallow: /*.css
+Allow: /*.js$
+Allow: /*.css$
+Sitemap: https://www.animaliavetcare.com//sitemap.xml
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /

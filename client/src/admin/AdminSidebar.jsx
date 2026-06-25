@@ -11,6 +11,7 @@ import { MapPin } from 'lucide-react';
 import { Star } from 'lucide-react';
 import { MessageSquare } from 'lucide-react';
 import { Calendar } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 
 const AdminSidebar = () => {
 
@@ -27,6 +28,7 @@ const AdminSidebar = () => {
         { href: "/admin/reviews", icon: <Star size={16}/>, label: "Reviews" },
         { href: "/admin/contacts", icon: <MessageSquare size={16}/>, label: "Contacts" },
         { href: "/admin/appointments", icon: <Calendar size={16}/>, label: "Appointments" },
+        { href: "/admin/banners", icon: <Megaphone size={16}/>, label: "Banners" },
     ]
 
     return (

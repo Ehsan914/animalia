@@ -2,6 +2,7 @@ import { Link } from "react-router"
 import { PixelPaw, PixelMedical, PixelHeart, WhatsApp } from "../components/icons/pixel-icons"
 import { Phone } from "lucide-react"
 import Button from "../components/ui/Button"
+import Reveal from "../components/ui/Reveal"
 import toast from "react-hot-toast"
 
 export default function ContactPage() {
@@ -9,7 +10,7 @@ export default function ContactPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="bg-mc-green-light py-12 md:py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <Reveal as="div" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6 mx-auto">
             <Phone className="w-4 h-4 text-mc-grass" />
             <span className="text-sm font-medium">Contact</span>
@@ -21,7 +22,7 @@ export default function ContactPage() {
             Have questions? We'd love to hear from you. Reach out to us through any 
             of the channels below or visit our clinic.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Contact Info Cards */}
@@ -29,7 +30,7 @@ export default function ContactPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Address */}
-            <div className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
+            <Reveal as="div" className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
               <div className="w-12 h-12 bg-mc-grass mx-auto flex items-center justify-center mb-4">
                 <PixelPaw className="w-8 h-8 text-white" />
               </div>
@@ -46,10 +47,10 @@ export default function ContactPage() {
               >
                 Get Directions →
               </a>
-            </div>
+            </Reveal>
 
             {/* Phone */}
-            <div className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
+            <Reveal as="div" delay={80} className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
               <div className="w-12 h-12 bg-mc-grass mx-auto flex items-center justify-center mb-4">
                 <Phone className="w-8 h-8 text-white" />
               </div>
@@ -72,10 +73,10 @@ export default function ContactPage() {
               >
                 +880 1879 388068
               </a>
-            </div>
+            </Reveal>
 
             {/* Email */}
-            <div className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
+            <Reveal as="div" delay={160} className="bg-background border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
               <div className="w-12 h-12 bg-mc-grass mx-auto flex items-center justify-center mb-4">
                 <PixelHeart className="w-8 h-8 text-white" />
               </div>
@@ -98,7 +99,7 @@ export default function ContactPage() {
               >
                 animaliavetcare25@gmail.com
               </a>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -108,7 +109,7 @@ export default function ContactPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Map Placeholder */}
-            <div className="aspect-square lg:aspect-auto border-4 border-mc-primary shadow-mc-sharp relative overflow-hidden min-h-75">
+            <Reveal as="div" className="aspect-square lg:aspect-auto border-4 border-mc-primary shadow-mc-sharp relative overflow-hidden min-h-75">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.7949602483322!2d90.3747017!3d23.7903147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c10059bd215d%3A0xb58f1a635614a2ad!2sAnimalia%20Vet%20Care!5e0!3m2!1sen!2sbd!4v1780767823840!5m2!1sen!2sbd"
                 width="100%"
@@ -131,10 +132,10 @@ export default function ContactPage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
             {/* Operating Hours & WhatsApp */}
-            <div className="space-y-6">
+            <Reveal as="div" delay={120} className="space-y-6">
               {/* Operating Hours */}
               <div className="bg-card border-4 border-mc-primary shadow-mc-sharp p-6">
                 <h3 className="font-pixel text-xs text-black mb-4">
@@ -193,7 +194,7 @@ export default function ContactPage() {
                 </Button>
                                                   
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -201,16 +202,16 @@ export default function ContactPage() {
       {/* Contact Form Section */}
       <section className="py-12 md:py-16 bg-mc-creeper">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
+          <Reveal className="text-center mb-8">
             <h2 className="font-pixel text-lg text-black mb-4">
               Send Us a Message
             </h2>
             <p className="text-black">
               Have a question that isn't urgent? Fill out the form below and we'll get back to you soon.
             </p>
-          </div>
+          </Reveal>
 
-          <div className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 space-y-6">
+          <Reveal as="div" delay={120} className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-black mb-2">
@@ -288,13 +289,13 @@ export default function ContactPage() {
           >
             Send Message
           </Button>
-        </div>
+        </Reveal>
         </div>
       </section>
 
       {/* FAQ Teaser */}
       <section className="py-12 bg-mc-grass">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <Reveal as="div" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-pixel text-base text-white mb-4">
             Have Questions?
           </h2>
@@ -309,7 +310,7 @@ export default function ContactPage() {
               View Services & FAQ
             </Button>
           </Link>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

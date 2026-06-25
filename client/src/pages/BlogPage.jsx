@@ -1,8 +1,9 @@
 import { Link } from "react-router"
 import { PixelPaw } from "../components/icons/pixel-icons"
 import Button from "../components/ui/Button"
-import { getBlogs } from "../api/blogs"
-import { useEffect, useState } from "react"
+import Reveal from "../components/ui/Reveal"
+import { useState } from "react"
+import { useSiteData } from "../context/SiteDataContext"
 
 const categories = [
   { name: "All", slug: "all" },
@@ -11,27 +12,6 @@ const categories = [
   { name: "Vaccination", slug: "vaccination" },
   { name: "Surgery", slug: "surgery" },
 ]
-
-const BlogCardSkeleton = () => (
-  <div className="bg-white border-4 border-mc-primary shadow-mc-sharp overflow-hidden animate-pulse">
-    {/* Thumbnail */}
-    <div className="aspect-video bg-mc-creeper" />
-    {/* Content */}
-    <div className="p-4">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="h-3 bg-mc-creeper w-20" />
-        <div className="h-3 bg-mc-creeper w-3" />
-        <div className="h-3 bg-mc-creeper w-16" />
-      </div>
-      <div className="h-4 bg-mc-creeper w-3/4 mb-2" />
-      <div className="space-y-1 mb-4">
-        <div className="h-3 bg-mc-creeper w-full" />
-        <div className="h-3 bg-mc-creeper w-5/6" />
-      </div>
-      <div className="h-3 bg-mc-creeper w-20 mt-4" />
-    </div>
-  </div>
-)
 
 const NoBlogsFound = () => (
   <div className="col-span-full flex flex-col items-center justify-center py-24 gap-4">
@@ -46,23 +26,16 @@ const NoBlogsFound = () => (
 )
 
 const BlogPage = () => {
-  const [blogPosts, setBlogPosts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { blogs } = useSiteData()
   const [lang, setLang] = useState("en")
-
-  useEffect(() => {
-    getBlogs().then(data => {
-      setBlogPosts(data)
-      setLoading(false)
-    })
-  }, [])
+  const blogPosts = blogs[lang] ?? []
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
+          <Reveal className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6">
               <PixelPaw className="w-4 h-4 text-mc-grass" />
               <span className="text-sm font-medium">Blog</span>
@@ -74,7 +47,7 @@ const BlogPage = () => {
               Expert insights from our veterinary team to help you provide the best care
               for your beloved pets. Browse our articles on health, nutrition, and more.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -130,14 +103,14 @@ const BlogPage = () => {
       <section className="py-16 md:py-24 bg-mc-creeper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading
-              ? [...Array(6)].map((_, i) => <BlogCardSkeleton key={i} />)
-              : blogPosts.length === 0
+            {blogPosts.length === 0
               ? <NoBlogsFound />
-              : blogPosts.map((post) => (
-                  <Link
+              : blogPosts.map((post, index) => (
+                  <Reveal
+                    as={Link}
                     key={post.slug}
                     href={`/blog/${post.slug}`}
+                    delay={Math.min(index, 9) * 60}
                     className="group bg-white border-4 border-mc-primary shadow-mc-sharp overflow-hidden hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                   >
                     {/* Thumbnail */}
@@ -179,13 +152,13 @@ const BlogPage = () => {
                         Read more →
                       </span>
                     </div>
-                  </Link>
+                  </Reveal>
                 ))
             }
           </div>
 
           {/* Load More */}
-          {!loading && blogPosts.length > 0 && (
+          {blogPosts.length > 0 && (
             <div className="text-center mt-12">
               <Button>Load More Posts</Button>
             </div>

@@ -1,30 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { PixelPaw, PixelMedical, WhatsApp } from "../components/icons/pixel-icons"
 import Button from "../components/ui/Button"
 import { LucidePhone } from "lucide-react"
-import { getServices } from "../api/services"
 import { createAppointment } from "../api/appointments"
 import toast from "react-hot-toast"
+import { useSiteData } from "../context/SiteDataContext"
 
 const SPECIES_PRESETS = ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Reptile"]
 const WHATSAPP_NUMBER = "8801879388068"
-
-// ─── Skeleton for service buttons ────────────────────────────────────────────
-function ServicesSkeleton() {
-    return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-            <div
-            key={i}
-            className="h-10 border-4 border-mc-primary bg-gray-100 animate-pulse"
-            style={{ animationDelay: `${i * 80}ms` }}
-            />
-        ))}
-        </div>
-    )
-}
 
 export default function AppointmentPage() {
     const [formData, setFormData] = useState({
@@ -43,27 +28,13 @@ export default function AppointmentPage() {
     const [speciesPreset, setSpeciesPreset] = useState("")
     const [speciesCustom, setSpeciesCustom] = useState("")
 
-    // Services from API
-    const [availableServices, setAvailableServices] = useState([])
-    const [servicesLoading, setServicesLoading] = useState(true)
-    const [servicesError, setServicesError] = useState(null)
+    // Services from the shared site cache
+    const { services: availableServices } = useSiteData()
 
     // Submission state
     const [isSubmitting, setIsSubmitting] = useState(false)
     // eslint-disable-next-line no-unused-vars
     const [submitError, setSubmitError] = useState(null)
-
-    useEffect(() => {
-        getServices()
-        .then((data) => {
-            setAvailableServices(data)
-            setServicesLoading(false)
-        })
-        .catch((err) => {
-            setServicesError(err)
-            setServicesLoading(false)
-        })
-    }, [])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -344,14 +315,7 @@ export default function AppointmentPage() {
                     <label className="block text-sm font-medium text-black mb-2">
                         Service(s) *
                     </label>
-                    {servicesLoading && <ServicesSkeleton />}
-                    {servicesError && (
-                        <p className="text-sm text-mc-emergency">
-                        Failed to load services. Please try again later.
-                        </p>
-                    )}
-                    {!servicesLoading && !servicesError && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {availableServices.map((service) => {
                             const selected = formData.selectedServices.includes(service.id)
                             return (
@@ -370,7 +334,6 @@ export default function AppointmentPage() {
                             )
                         })}
                         </div>
-                    )}
                     {/* Hidden required guard */}
                     <input
                         type="text"
@@ -381,7 +344,7 @@ export default function AppointmentPage() {
                         aria-hidden="true"
                         tabIndex={-1}
                     />
-                    {!servicesLoading && formData.selectedServices.length === 0 && (
+                    {formData.selectedServices.length === 0 && (
                         <p className="text-xs text-mc-emergency mt-1">
                         Please select at least one service.
                         </p>

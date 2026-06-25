@@ -12,6 +12,7 @@ import contactRoutes from './routes/contactRoutes.js';
 import emergencyRoutes from './routes/emergencyRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
+import bannerRoutes from './routes/bannerRoutes.js';
 //import auth from './middleware/auth.js';
 
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/appointment', appointmentRoutes);
+app.use('/api/banners', bannerRoutes);
 
 //Health check route
 app.get('/api/health', (req, res) => {

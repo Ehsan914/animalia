@@ -119,6 +119,17 @@ model Location {
   @@map("locations")
 }
 
+model Banner {
+  id            Int      @id @default(autoincrement())
+  message       String
+  type          String   @default("promo")   // info | promo | emergency
+  ctaLabel      String   @default("")
+  ctaUrl        String   @default("")
+  active        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  @@map("banners")
+}
+
 model Appointment {
   id            Int      @id @default(autoincrement())
   name          String

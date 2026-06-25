@@ -19,7 +19,7 @@ export default function Navbar() {
     ]
 
     return (
-        <nav className='sticky top-0 z-50 bg-white border-2 border-mc-primary shadow-mc-flat'>
+        <nav className='sticky top-0 z-50 bg-white border-2 border-t-0 border-mc-primary shadow-mc-flat'>
             <div className='max-w-7xl mx-auto px-4 md:px-6 lg:px-8'>
                 <div className='flex items-center justify-between h-16 nav:h-20'>
                     <Link to='/' className='flex items-center gap-2'>

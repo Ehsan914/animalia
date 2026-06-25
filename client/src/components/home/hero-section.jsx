@@ -15,23 +15,23 @@ export function HeroSection() {
                 <div className="relative z-10 flex items-center w-full max-w-7xl mx-auto px-6 lg:px-8 py-16">
                     <div className="max-w-2xl">
                         {/* Pixel badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-8">
+                        <div style={{ animationDelay: "0ms" }} className="mc-bump-in inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-8">
                             <PixelPaw className="w-5 h-5 text-mc-primary" />
                             <span className="text-sm font-medium text-black">Professional Veterinary Service</span>
                         </div>
 
                         {/* Main heading */}
-                        <h1 className="font-pixel text-2xl sm:text-3xl md:text-4xl text-black leading-relaxed mb-6">
+                        <h1 style={{ animationDelay: "130ms" }} className="mc-bump-in font-pixel text-2xl sm:text-3xl md:text-4xl text-black leading-relaxed mb-6">
                             Compassionate Care<br />for Your Pets
                         </h1>
 
                         {/* Subheading */}
-                        <p className="font-sans text-lg md:text-xl text-black mb-8 max-w-xl">
+                        <p style={{ animationDelay: "260ms" }} className="mc-bump-in font-sans text-lg md:text-xl text-black mb-8 max-w-xl">
                             Your trusted veterinary clinic providing expert medical care, consultations, and treatments for all your beloved companions.
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                        <div style={{ animationDelay: "390ms" }} className="mc-bump-in flex flex-col sm:flex-row gap-4 mb-12">
                             <Link to="/appointment">
                                 <Button className="font-pixel">Book Appointment</Button>
                             </Link>
@@ -41,7 +41,7 @@ export function HeroSection() {
                         </div>
 
                         {/* Stats */}
-                        <div className="inline-grid grid-cols-3 gap-0 border-2 border-mc-primary bg-mc-grass overflow-hidden">
+                        <div style={{ animationDelay: "520ms" }} className="mc-bump-in inline-grid grid-cols-3 gap-0 border-2 border-mc-primary bg-mc-grass overflow-hidden">
                             <div className="text-center px-6 py-3 border-r-2 border-mc-primary">
                                 <div className="font-pixel text-[14px] sm:text-2xl text-white">6+</div>
                                 <div className="text-xs text-white mt-1">Years Experience</div>
@@ -59,7 +59,7 @@ export function HeroSection() {
                 </div>
 
                 {/* Right photo — blended with radial gradient masks */}
-                <div className="hidden hero-img:block absolute right-0 bottom-0 h-full w-auto overflow-visible">
+                <div style={{ animationDelay: "650ms" }} className="mc-bump-in hidden hero-img:block absolute right-0 bottom-0 h-full w-auto overflow-visible">
                     {/* The actual photo with mask */}
                     <div
                         className="relative h-full w-full"
@@ -90,7 +90,7 @@ export function HeroSection() {
             </div>
 
             {/* Floating promotion banner - inside hero */}
-            <div className="hidden banner:block absolute z-30 bottom-8 nav-bottom-2 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-6 lg:px-8">
+            {/* <div className="hidden banner:block absolute z-30 bottom-8 nav-bottom-2 left-1/2 transform -translate-x-1/2 w-full max-w-7xl px-6 lg:px-8">
                 <div className="bg-[#c0392b] shadow-mc-heart flex items-center justify-between px-8 py-5 shadow-lg">
                     <span className="font-pixel text-white text-lg sm:text-xl tracking-wide">
                         Free Rabies Vaccination
@@ -99,17 +99,17 @@ export function HeroSection() {
                         7-13th June
                     </span>
                 </div>
-            </div>
+            </div> */}
 
             {/* Promotion banner */}
-            <div className="banner:hidden relative z-10 w-full bg-[#c0392b] flex flex-col gap-5 items-center justify-between px-8 py-5">
+            {/* <div className="banner:hidden relative z-10 w-full bg-[#c0392b] flex flex-col gap-5 items-center justify-between px-8 py-5">
                 <span className="font-pixel text-white text-center text-lg sm:text-xl tracking-wide">
                     Free Rabies Vaccination
                 </span>
                 <span className="font-sans text-white text-base sm:text-lg font-medium">
                     7-13th June
                 </span>
-            </div>
+            </div> */}
         </section>
     );
 }

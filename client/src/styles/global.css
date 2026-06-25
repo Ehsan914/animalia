@@ -49,8 +49,50 @@
   background: linear-gradient(to bottom, var(--mc-sky) 0%, var(--mc-sky) 60%, var(--mc-grass) 60%, var(--mc-grass) 70%, var(--mc-wood) 70%);
 }
 
+/* ─── Minecraft motion: stepped & blocky, never smooth ─── */
 
-/* 
+/* Choppy, pixel-art spinner (replaces smooth animate-spin) */
+@keyframes mc-spin {
+  to { transform: rotate(360deg); }
+}
+.mc-spin { animation: mc-spin 1s steps(8) infinite; }
+
+/* Block place — pops into existence in chunks */
+@keyframes mc-block-in {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.mc-block-in { animation: mc-block-in 0.35s steps(4) backwards; }
+
+/* Bump in — rises up and settles with a soft overshoot; soothing one-by-one entrance */
+@keyframes mc-bump-in {
+  0%   { opacity: 0; transform: translateY(22px); }
+  65%  { opacity: 1; transform: translateY(-5px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.mc-bump-in { animation: mc-bump-in 0.5s ease-out backwards; }
+
+/* Dropped-item bob — floats up/down in discrete steps */
+@keyframes mc-bob {
+  from { transform: translateY(2px); }
+  to   { transform: translateY(-6px); }
+}
+.mc-bob { animation: mc-bob 0.8s steps(3) infinite alternate; }
+
+/* Health-bar jiggle — fires on card hover (event-driven, like taking damage) */
+@keyframes mc-jiggle {
+  from { transform: scale(1); }
+  to   { transform: scale(1.3); }
+}
+.group:hover .mc-heart-beat { animation: mc-jiggle 0.4s steps(2) infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-spin, .mc-block-in, .mc-bump-in, .mc-bob,
+  .group:hover .mc-heart-beat { animation: none; }
+}
+
+
+/*
 Blue Version
 @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Press+Start+2P&family=VT323&display=swap');
 @import "tailwindcss";

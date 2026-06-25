@@ -1,20 +1,21 @@
 import { Link } from "react-router"
 import { PixelMedical, WhatsApp } from "../../components/icons/pixel-icons"
 import Button from "../../components/ui/Button"
+import Reveal from "../../components/ui/Reveal"
 
 const ContactSection = () => {
     return (
         <section className="py-20 bg-card">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
-                <div className="text-center mb-16">
+                <Reveal className="text-center mb-16">
                     <h2 className="font-pixel text-lg sm:text-xl md:text-2xl text-black mb-4">
                         Contact Us
                     </h2>
                     <p className="text-black max-w-2xl mx-auto">
                         Visit us, chat, or call — we're always here for your beloved companions.
                     </p>
-                </div>
+                </Reveal>
 
                 {/* Map + Contact Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
