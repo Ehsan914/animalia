@@ -4,10 +4,20 @@ import { Phone } from "lucide-react"
 import Button from "../components/ui/Button"
 import Reveal from "../components/ui/Reveal"
 import toast from "react-hot-toast"
+import { SEO, LocalBusinessSchema } from "../components/SEO"
+import { seoConfig, getCanonicalUrl, getOgImage, getLocalBusinessSchema } from "../utils/seo"
 
 export default function ContactPage() {
   return (
     <div className="min-h-screen">
+      <SEO
+        title={seoConfig.contact.title}
+        description={seoConfig.contact.description}
+        keywords={seoConfig.contact.keywords}
+        canonicalUrl={getCanonicalUrl("contact")}
+        ogImage={getOgImage()}
+      />
+      <LocalBusinessSchema schema={getLocalBusinessSchema()} />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-12 md:py-16">
         <Reveal as="div" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

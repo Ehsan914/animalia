@@ -18,9 +18,18 @@ export const useSiteData = () => {
 // Pulls a settled promise's value, logging (and emptying) any failure so one
 // bad request can never hang the whole site behind the loader.
 const settle = (res, label, fallback = []) => {
-    if (res.status === "fulfilled") return res.value
-    console.error(`Failed to load ${label}:`, res.reason)
-    return fallback
+    if (res.status !== "fulfilled") {
+        console.error(`Failed to load ${label}:`, res.reason)
+        return fallback
+    }
+    // Guard against non-JSON responses (e.g. an SPA HTML fallback returned with
+    // a 200 when the API URL is misconfigured/unreachable) poisoning the UI:
+    // if we expected an array, insist on an array, otherwise fall back.
+    if (Array.isArray(fallback) && !Array.isArray(res.value)) {
+        console.error(`Ignoring unexpected (non-array) response for ${label}`)
+        return fallback
+    }
+    return res.value
 }
 
 const sortByOrder = (arr) => [...arr].sort((a, b) => a.order - b.order)
@@ -76,10 +85,23 @@ export const SiteDataProvider = ({ children }) => {
         loadEverything()
     }, [])
 
-    if (loading) return <PageLoader />
+    // Signal for the build-time prerenderer (scripts/prerender.js): once the
+    // global prefetch settles and content has painted, mark the document ready
+    // so the snapshot is taken with real content instead of the loader.
+    useEffect(() => {
+        if (!loading && typeof document !== "undefined") {
+            document.documentElement.setAttribute("data-app-ready", "true")
+        }
+    }, [loading])
 
     return (
         <SiteDataContext.Provider value={data}>
+            {/* Children stay mounted (even while loading) so their content and
+                meta tags exist in the DOM for prerendering and first paint. The
+                full-screen loader overlays the empty state while the single
+                global prefetch is in flight — same UX as before, just layered
+                instead of replacing the tree. */}
+            {loading && <PageLoader />}
             {children}
         </SiteDataContext.Provider>
     )

@@ -13,10 +13,16 @@ export const SEO = ({
   children,
 }) => {
   const siteTitle = "Animalia Vet Care";
+  // Avoid duplicating the brand when a page title already contains it.
+  const fullTitle = !title
+    ? siteTitle
+    : title.includes(siteTitle)
+      ? title
+      : `${title} | ${siteTitle}`;
 
   return (
     <Helmet>
-      <title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
+      <title>{fullTitle}</title>
       {description && <meta name="description" content={description} />}
       {keywords && <meta name="keywords" content={keywords} />}
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}

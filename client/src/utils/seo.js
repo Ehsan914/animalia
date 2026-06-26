@@ -1,3 +1,6 @@
+// Canonical origin for the site (NO trailing slash). Update if the domain changes.
+export const SITE_URL = "https://www.animaliavetcare.com";
+
 // Helper to set common meta tags for different pages
 export const seoConfig = {
   home: {
@@ -44,13 +47,13 @@ export const seoConfig = {
   },
 };
 
-export const getOgImage = (path = "") => {
-  // Replace with your actual OG image URL
-  return `https://www.animaliavetcare.com//og-image.png`;
+export const getOgImage = () => {
+  return `${SITE_URL}/og-image.png`;
 };
 
 export const getCanonicalUrl = (path = "") => {
-  return `https://www.animaliavetcare.com/${path}`;
+  const clean = String(path).replace(/^\/+/, "");
+  return clean ? `${SITE_URL}/${clean}` : `${SITE_URL}/`;
 };
 
 // Schema.org structured data for local business
@@ -60,7 +63,7 @@ export const getLocalBusinessSchema = () => {
     "@type": "VeterinaryClinic",
     name: "Animalia Vet Care",
     description: "Professional veterinary clinic providing compassionate pet care services since 2024. 900+ pets treated by expert veterinarians.",
-    url: "https://www.animaliavetcare.com/",
+    url: `${SITE_URL}/`,
     telephone: "+880 1533 829537",
     email: "animaliavetcare25@gmail.com",
     address: {
@@ -76,7 +79,7 @@ export const getLocalBusinessSchema = () => {
       name: "Dr. Md. Easin",
     },
     foundingDate: "2024",
-    image: "https://www.animaliavetcare.com/logo.png",
+    image: `${SITE_URL}/logo.png`,
     sameAs: [
       "https://www.facebook.com/profile.php?id=61588473520737",
     ],
@@ -118,7 +121,7 @@ export const getBlogPostSchema = (blog) => {
     "@type": "BlogPosting",
     headline: blog.title,
     description: blog.description || blog.title,
-    image: blog.image || "https://www.animaliavetcare.com//blog-default.jpg",
+    image: blog.image || `${SITE_URL}/blog-default.jpg`,
     datePublished: blog.createdAt,
     author: {
       "@type": "Person",

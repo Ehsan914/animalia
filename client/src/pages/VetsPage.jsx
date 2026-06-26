@@ -4,12 +4,21 @@ import { getGDriveUrl } from "../utils/gdrive"
 import Button from "../components/ui/Button"
 import Reveal from "../components/ui/Reveal"
 import { useSiteData } from "../context/SiteDataContext"
+import { SEO } from "../components/SEO"
+import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
 
 const VetsPage = () => {
   const { vets } = useSiteData()
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title={seoConfig.vets.title}
+        description={seoConfig.vets.description}
+        keywords={seoConfig.vets.keywords}
+        canonicalUrl={getCanonicalUrl("vets")}
+        ogImage={getOgImage()}
+      />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

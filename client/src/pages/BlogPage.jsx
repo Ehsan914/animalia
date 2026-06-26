@@ -4,6 +4,8 @@ import Button from "../components/ui/Button"
 import Reveal from "../components/ui/Reveal"
 import { useState } from "react"
 import { useSiteData } from "../context/SiteDataContext"
+import { SEO } from "../components/SEO"
+import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
 
 const categories = [
   { name: "All", slug: "all" },
@@ -32,6 +34,13 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title={seoConfig.blog.title}
+        description={seoConfig.blog.description}
+        keywords={seoConfig.blog.keywords}
+        canonicalUrl={getCanonicalUrl("blogs")}
+        ogImage={getOgImage()}
+      />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,7 +118,7 @@ const BlogPage = () => {
                   <Reveal
                     as={Link}
                     key={post.slug}
-                    href={`/blog/${post.slug}`}
+                    href={`/blogs/${post.slug}`}
                     delay={Math.min(index, 9) * 60}
                     className="group bg-white border-4 border-mc-primary shadow-mc-sharp overflow-hidden hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                   >

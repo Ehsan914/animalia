@@ -7,6 +7,8 @@ import { LucidePhone } from "lucide-react"
 import { createAppointment } from "../api/appointments"
 import toast from "react-hot-toast"
 import { useSiteData } from "../context/SiteDataContext"
+import { SEO } from "../components/SEO"
+import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
 
 const SPECIES_PRESETS = ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Reptile"]
 const WHATSAPP_NUMBER = "8801879388068"
@@ -137,6 +139,13 @@ export default function AppointmentPage() {
 
     return (
         <div className="min-h-screen">
+        <SEO
+            title={seoConfig.appointments.title}
+            description={seoConfig.appointments.description}
+            keywords={seoConfig.appointments.keywords}
+            canonicalUrl={getCanonicalUrl("appointment")}
+            ogImage={getOgImage()}
+        />
         {/* Hero Section */}
         <section className="bg-mc-green-light py-12 md:py-16">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
