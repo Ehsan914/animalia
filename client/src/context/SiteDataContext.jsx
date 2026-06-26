@@ -94,14 +94,14 @@ export const SiteDataProvider = ({ children }) => {
         }
     }, [loading])
 
+    // Blocking loader: render ONLY the loader while the single global prefetch
+    // is in flight, then reveal everything at once. The prerenderer (a real
+    // headless browser) runs this lifecycle to completion and snapshots after
+    // data-app-ready fires, so the static HTML still gets full content + meta.
+    if (loading) return <PageLoader />
+
     return (
         <SiteDataContext.Provider value={data}>
-            {/* Children stay mounted (even while loading) so their content and
-                meta tags exist in the DOM for prerendering and first paint. The
-                full-screen loader overlays the empty state while the single
-                global prefetch is in flight — same UX as before, just layered
-                instead of replacing the tree. */}
-            {loading && <PageLoader />}
             {children}
         </SiteDataContext.Provider>
     )
