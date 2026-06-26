@@ -21,6 +21,7 @@
 
 import { preview } from "vite"
 import puppeteer from "puppeteer"
+import chromium from "@sparticuz/chromium"
 import { fileURLToPath } from "node:url"
 import { dirname, resolve, join } from "node:path"
 import { mkdirSync, writeFileSync } from "node:fs"
@@ -51,10 +52,23 @@ async function run() {
     preview: { port: PORT, strictPort: true },
   })
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-web-security"],
-  })
+  // Vercel's build image lacks the system libraries full Chromium needs, so on
+  // serverless we use @sparticuz/chromium (a Chromium that bundles its libs).
+  // Locally we use puppeteer's own bundled Chromium. `--disable-web-security`
+  // lets the headless browser read the API across the localhost preview origin.
+  const onServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+  const launchOptions = onServerless
+    ? {
+        args: [...chromium.args, "--disable-web-security"],
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      }
+    : {
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-web-security"],
+      }
+
+  const browser = await puppeteer.launch(launchOptions)
 
   // Collect every snapshot first, then write — so overwriting dist/index.html
   // mid-crawl can't pollute the SPA fallback used by not-yet-rendered routes.
