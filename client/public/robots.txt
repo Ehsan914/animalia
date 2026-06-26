@@ -3,12 +3,30 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 
-# Block AI training/scraping crawlers (deliberate choice — remove these
-# blocks if you want visibility in AI assistants' answers)
+# AI assistant crawlers are explicitly welcomed so the clinic can be
+# surfaced and cited in AI answers (ChatGPT, Perplexity, Claude, Gemini).
 User-agent: GPTBot
-Disallow: /
+Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
 
 Sitemap: https://www.animaliavetcare.com/sitemap.xml
