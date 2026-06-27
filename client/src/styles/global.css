@@ -29,7 +29,7 @@
   --shadow-mc-flat:       2px 2px 0px 0px #3e8e41;
   --shadow-mc-flat-b:     2px 2px 0px 0px #000000;
 
-  --breakpoint-banner:  700px;
+  --breakpoint-banner:    700px;
   --breakpoint-nav:       850px;
   --breakpoint-hero-img:  1350px;
 }

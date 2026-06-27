@@ -130,6 +130,24 @@ model Banner {
   @@map("banners")
 }
 
+// Rich promotional slide shown inside the homepage hero carousel.
+model HeroBanner {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String   @db.Text
+  location      String   @default("")
+  mapUrl        String   @default("")
+  imageUrl      String
+  partnerLogos  String[]
+  startDate     DateTime
+  endDate       DateTime
+  startTime     String   @default("")
+  endTime       String   @default("")
+  active        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  @@map("hero_banners")
+}
+
 model Appointment {
   id            Int      @id @default(autoincrement())
   name          String

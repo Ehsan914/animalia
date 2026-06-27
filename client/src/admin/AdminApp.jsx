@@ -14,6 +14,7 @@ import ReviewsManager from "./ReviewsManager";
 import ContactsManager from "./ContactsManager";
 import AppointmentsManager from "./AppointmentsManager";
 import BannersManager from "./BannersManager";
+import HeroBannersManager from "./HeroBannersManager";
 import AdminTopbar from "./AdminTopbar";
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -44,6 +45,7 @@ const AdminApp = () => {
                 <Route path="contacts" element={<ContactsManager />} />
                 <Route path="appointments" element={<AppointmentsManager />} />
                 <Route path="banners" element={<BannersManager />} />
+                <Route path="hero-banners" element={<HeroBannersManager />} />
             </Route>
         </Routes>
     );

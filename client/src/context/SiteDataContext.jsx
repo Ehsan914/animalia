@@ -4,6 +4,7 @@ import { getVets } from "../api/vets"
 import { getReviews, getFAQs } from "../api/misc"
 import { getBlogs } from "../api/blogs"
 import { getActiveBanner } from "../api/banners"
+import { getActiveHeroBanner } from "../api/heroBanners"
 import PageLoader from "../components/ui/PageLoader"
 
 const SiteDataContext = createContext(null)
@@ -43,6 +44,7 @@ export const SiteDataProvider = ({ children }) => {
         faqs: { en: [], bn: [] },
         blogs: { en: [], bn: [] },
         banner: null,
+        heroBanner: null,
     })
     const hasFetched = useRef(false)
 
@@ -53,7 +55,7 @@ export const SiteDataProvider = ({ children }) => {
         const loadEverything = async () => {
             // All requests fire at once, so the total wait is the slowest single
             // request — not the sum of them.
-            const [services, vets, reviews, faqsEn, faqsBn, blogsEn, blogsBn, banner] =
+            const [services, vets, reviews, faqsEn, faqsBn, blogsEn, blogsBn, banner, heroBanner] =
                 await Promise.allSettled([
                     getServices(),
                     getVets(),
@@ -63,6 +65,7 @@ export const SiteDataProvider = ({ children }) => {
                     getBlogs("en"),
                     getBlogs("bn"),
                     getActiveBanner(),
+                    getActiveHeroBanner(),
                 ])
 
             setData({
@@ -78,6 +81,7 @@ export const SiteDataProvider = ({ children }) => {
                     bn: settle(blogsBn, "blogs (bn)"),
                 },
                 banner: settle(banner, "banner", null),
+                heroBanner: settle(heroBanner, "hero banner", null),
             })
             setLoading(false)
         }

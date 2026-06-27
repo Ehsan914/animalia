@@ -55,7 +55,7 @@ const ContactSection = () => {
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-black font-bold">Saturday – Friday</span>
-                                    <span className="font-bold text-black">9:00 AM – 6:00 PM</span>
+                                    <span className="font-bold text-black">10:00 AM – 9:00 PM</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-mc-emergency font-bold">Emergency Services</span>

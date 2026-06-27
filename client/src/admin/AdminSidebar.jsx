@@ -12,6 +12,7 @@ import { Star } from 'lucide-react';
 import { MessageSquare } from 'lucide-react';
 import { Calendar } from 'lucide-react';
 import { Megaphone } from 'lucide-react';
+import { GalleryHorizontalEnd } from 'lucide-react';
 
 const AdminSidebar = () => {
 
@@ -29,6 +30,7 @@ const AdminSidebar = () => {
         { href: "/admin/contacts", icon: <MessageSquare size={16}/>, label: "Contacts" },
         { href: "/admin/appointments", icon: <Calendar size={16}/>, label: "Appointments" },
         { href: "/admin/banners", icon: <Megaphone size={16}/>, label: "Banners" },
+        { href: "/admin/hero-banners", icon: <GalleryHorizontalEnd size={16}/>, label: <span>Hero<br/>Banners</span> },
     ]
 
     return (
