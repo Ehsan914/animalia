@@ -91,11 +91,6 @@ export const getLocalBusinessSchema = () => {
       "Emergency Veterinary Care",
       "Pet Diagnostics",
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "900",
-    },
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
