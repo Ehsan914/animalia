@@ -6,10 +6,8 @@ import { BriefcaseMedical } from 'lucide-react';
 import { Users } from 'lucide-react';
 import { BookOpen } from 'lucide-react';
 import { CircleQuestionMark } from 'lucide-react';
-import { Phone } from 'lucide-react';
 import { MapPin } from 'lucide-react';
 import { Star } from 'lucide-react';
-import { MessageSquare } from 'lucide-react';
 import { Calendar } from 'lucide-react';
 import { Megaphone } from 'lucide-react';
 import { GalleryHorizontalEnd } from 'lucide-react';
@@ -24,10 +22,8 @@ const AdminSidebar = () => {
         { href: "/admin/vets", icon: <Users size={16}/>, label: "Vets" },
         { href: "/admin/blogs", icon: <BookOpen size={16}/>, label: "Blogs" },
         { href: "/admin/faqs", icon: <CircleQuestionMark size={16}/>, label: "FAQs" },
-        { href: "/admin/emergency-contact", icon: <Phone size={16}/>, label: <span>Emergency<br/>Contact</span> },
-        { href: "/admin/location", icon: <MapPin size={16}/>, label: "Location" },
         { href: "/admin/reviews", icon: <Star size={16}/>, label: "Reviews" },
-        { href: "/admin/contacts", icon: <MessageSquare size={16}/>, label: "Contacts" },
+        { href: "/admin/clinic-profile", icon: <MapPin size={16}/>, label: <span>Clinic<br/>Profile</span> },
         { href: "/admin/appointments", icon: <Calendar size={16}/>, label: "Appointments" },
         { href: "/admin/banners", icon: <Megaphone size={16}/>, label: "Banners" },
         { href: "/admin/hero-banners", icon: <GalleryHorizontalEnd size={16}/>, label: <span>Hero<br/>Banners</span> },

@@ -1,0 +1,26 @@
+# Local development database. Not used in production (Railway).
+#   docker compose up -d        start
+#   npx prisma migrate deploy   apply migrations
+#   docker compose down         stop (data kept in the named volume)
+#   docker compose down -v      stop and wipe data
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: animalia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-animalia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-animalia}
+      POSTGRES_DB: ${POSTGRES_DB:-animalia}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - animalia-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  animalia-db-data:

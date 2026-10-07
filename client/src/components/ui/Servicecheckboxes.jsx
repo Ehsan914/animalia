@@ -99,7 +99,7 @@ const ServiceCheckboxes = ({ options = [], selectedIds = [], onChange }) => {
                     </label>
 
                     {/* Options */}
-                    {options
+                    {[...options]
                         .sort((a, b) => a.label.localeCompare(b.label))
                         .map((opt) => {
                             const checked = selectedIds.includes(opt.value)

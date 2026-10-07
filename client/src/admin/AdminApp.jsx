@@ -1,21 +1,17 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
 import Dashboard from "./Dashboard";
 import GuestRoute from "./GuestRoute";
-import AdminSidebar from "./AdminSidebar";
 import ServicesManager from "./ServicesManager";
 import VetsManager from "./VetsManager";
-import EmergencyManager from "./EmergencyManager";
 import BlogsManager from "./BlogsManager";
 import FAQsManager from "./FAQsManager";
-import LocationsManager from "./LocationsManager";
 import ReviewsManager from "./ReviewsManager";
-import ContactsManager from "./ContactsManager";
 import AppointmentsManager from "./AppointmentsManager";
+import ClinicProfileManager from "./ClinicProfileManager";
 import BannersManager from "./BannersManager";
 import HeroBannersManager from "./HeroBannersManager";
-import AdminTopbar from "./AdminTopbar";
 import AdminLayout from "../layouts/AdminLayout";
 
 const AdminApp = () => {
@@ -39,10 +35,8 @@ const AdminApp = () => {
                 <Route path="vets" element={<VetsManager />} />
                 <Route path="blogs" element={<BlogsManager />} />
                 <Route path="faqs" element={<FAQsManager />} />
-                <Route path="emergency-contact" element={<EmergencyManager />} />
-                <Route path="location" element={<LocationsManager />} />
                 <Route path="reviews" element={<ReviewsManager />} />
-                <Route path="contacts" element={<ContactsManager />} />
+                <Route path="clinic-profile" element={<ClinicProfileManager />} />
                 <Route path="appointments" element={<AppointmentsManager />} />
                 <Route path="banners" element={<BannersManager />} />
                 <Route path="hero-banners" element={<HeroBannersManager />} />

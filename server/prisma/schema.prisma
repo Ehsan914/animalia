@@ -82,10 +82,16 @@ model Review {
   species       String
   text          String   @db.Text
   rating        Int
-  published     Boolean  @default(false)
-  status        String
+  published     Boolean  @default(false)  // only ever true while status is approved
+  status        ModerationStatus @default(pending)
   createdAt     DateTime @default(now())
   @@map("reviews")
+}
+
+enum ModerationStatus {
+  pending
+  approved
+  rejected
 }
 
 model Faq {
@@ -98,25 +104,26 @@ model Faq {
   @@map("faqs")
 }
 
-model Contact {
-  id            Int      @id @default(autoincrement())
-  phone         String
-  email         String
-  @@map("contacts")
-}
-
-model EmergencyContact {
-  id            Int      @id @default(autoincrement())
-  phone         String
-  available24h  Boolean
-  @@map("emergency_contacts")
-}
-
-model Location {
-  id            Int      @id @default(autoincrement())
-  address       String
-  mapUrl        String
-  @@map("locations")
+// The clinic's contact details, address and hours. Exactly one row (id = 1,
+// enforced by a CHECK constraint); every public page reads it.
+model ClinicProfile {
+  id              Int      @id @default(1)
+  phone           String   // E.164, e.g. +8801533829537
+  email           String
+  emergencyPhone  String   // E.164
+  emergency24h    Boolean  @default(true)
+  whatsappNumber  String   // E.164
+  streetAddress   String
+  locality        String
+  postalCode      String
+  landmark        String   @default("")
+  directionsUrl   String
+  mapEmbedUrl     String
+  opensAt         String   // "HH:MM", clinic local time, every day
+  closesAt        String   // "HH:MM"
+  facebookUrl     String   @default("")
+  updatedAt       DateTime @updatedAt
+  @@map("clinic_profile")
 }
 
 model Banner {
@@ -158,7 +165,7 @@ model Appointment {
   services      AppointmentService[]
   date          DateTime
   message       String   @db.Text
-  status        String   @default("pending")
+  status        ModerationStatus @default(pending)
   vetComment    String   @db.Text
   createdAt     DateTime @default(now())
   @@map("appointments")

@@ -1,9 +1,14 @@
 import { Link } from "react-router"
 import { Phone, PixelMedical } from "../icons/pixel-icons"
-import Button from "../ui/Button"
 import Reveal from "../ui/Reveal"
+import { buttonClassName } from "../ui/buttonClassName"
+import { useClinicProfile } from "../../context/SiteDataContext"
+import { formatPhone, telHref } from "../../utils/clinicProfile"
 
 export function EmergencyBanner() {
+    const profile = useClinicProfile()
+    if (!profile) return null
+
     return (
         <section className="bg-mc-emergency py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,25 +19,24 @@ export function EmergencyBanner() {
                     </div>
                     <div>
                     <h3 className="font-pixel text-xs sm:text-sm text-white">
-                        24/7 Emergency Care
+                        {profile.emergency24h ? "24/7 Emergency Care" : "Emergency Care"}
                     </h3>
                     <p className="text-white/90 text-sm">
-                        Pet emergency? We're here for you around the clock.
+                        {profile.emergency24h
+                            ? "Pet emergency? We're here for you around the clock."
+                            : "Pet emergency? Call us straight away."}
                     </p>
                     </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <Button variant="ghost" className="font-sans text-[15px] py-2 font-bold text-mc-heart bg-white shadow-mc-emergency">
-                        <a
-                            href="tel:+8801879388068"
-                            className="flex items-center gap-2"
-                        >
-                            <Phone className="w-8 h-8 mb-2" />
-                            <span>Call: (+880) 1879-388068</span>
-                        </a>
-                    </Button>
-                    <p className="text-white font-bold text-[15px]"></p>
+                    <a
+                        href={telHref(profile.emergencyPhone)}
+                        className={buttonClassName("ghost", "flex items-center gap-2 font-sans text-[15px] py-2 font-bold text-mc-heart bg-white shadow-mc-emergency")}
+                    >
+                        <Phone className="w-8 h-8 mb-2" />
+                        <span>Call: {formatPhone(profile.emergencyPhone)}</span>
+                    </a>
                     <Link
                     to="/contact"
                     className="text-white font-sans font-bold hover:underline text-sm"

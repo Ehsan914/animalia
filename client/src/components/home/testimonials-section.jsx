@@ -96,7 +96,6 @@ export function TestimonialsSection({ testimonials = [] }) {
         <ReviewModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
-            onSuccess={() => console.log("Review submitted!")}
         />
         </section>
     )

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
 import { Heart, HeartOff, PixelPaw } from "../icons/pixel-icons"
 import { X } from "lucide-react"
-import { createReview } from "../../api/misc"
+import { reviews } from "../../api/resources"
 import toast from 'react-hot-toast'
 import Button from "./Button"
+import { useSpamCheck } from "./SpamCheck"
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Rabbit", "Bird", "Other"]
 
@@ -29,6 +30,7 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
     const [formData, setFormData] = useState(initialForm)
     const [errors, setErrors] = useState(initialErrors)
     const [loading, setLoading] = useState(false)
+    const spamCheck = useSpamCheck()
 
     // Trap scroll — legitimately syncing with an external system
     useEffect(() => {
@@ -42,6 +44,7 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
     const handleClose = () => {
         setFormData(initialForm)
         setErrors(initialErrors)
+        spamCheck.reset()
         onClose()
     }
 
@@ -92,18 +95,20 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
 
         setLoading(true)
         try {
-            await createReview({
+            await reviews.submit({
                 author: formData.author.trim(),
                 pet_name: formData.pet_name.trim(),
                 species: resolvedSpecies,
                 text: formData.text.trim(),
                 rating: formData.rating,
+                turnstileToken: spamCheck.token,
             })
             onSuccess?.()
             toast.success("Review submitted successfully")
             handleClose()
         } catch (err) {
-            toast.error("Error: " + err)
+            toast.error(err.message)
+            spamCheck.reset()
         } finally {
             setLoading(false)
         }
@@ -235,9 +240,11 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
                             maxLength={1000}
                         />
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                            {formData.text.length}/400
+                            {formData.text.length}/1000
                         </p>
                     </Field>
+
+                    {spamCheck.widget}
 
                 </div>
 
@@ -252,7 +259,7 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        disabled={loading}
+                        disabled={loading || !spamCheck.token}
                         className="px-5 py-2.5 border-2 text-white font-pixel text-[10px] transition-opacity disabled:opacity-50 cursor-pointer"
                     >
                         {loading ? "Submitting..." : "Submit Review"}

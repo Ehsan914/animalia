@@ -1,4 +1,7 @@
 import { Helmet } from "react-helmet-async";
+import { routeFor } from "../routes/publicRoutes";
+import { getCanonicalUrl, getOgImage, getLocalBusinessSchema } from "../utils/seo";
+import { useClinicProfile } from "../context/SiteDataContext";
 
 /**
  * SEO Component - Manages meta tags for each page
@@ -45,12 +48,35 @@ export const SEO = ({
 };
 
 /**
- * LocalBusiness Schema Component - Add structured data for SEO
+ * Meta tags for a public page, from its entry in src/routes/publicRoutes.js.
+ * Usage: <PageSEO page="contact" />
  */
-export const LocalBusinessSchema = ({ schema }) => {
+export const PageSEO = ({ page }) => {
+  const route = routeFor(page);
+  return (
+    <SEO
+      title={route.title}
+      description={route.description}
+      keywords={route.keywords}
+      canonicalUrl={getCanonicalUrl(route.path)}
+      ogImage={getOgImage()}
+    />
+  );
+};
+
+// Prerendering writes script text into the HTML as-is, so "<" is escaped to
+// keep a "</script>" inside the data from closing the tag.
+const toJsonLd = (data) => JSON.stringify(data).replace(/</g, "\\u003c");
+
+/**
+ * LocalBusiness structured data, built from the clinic profile.
+ */
+export const LocalBusinessSchema = () => {
+  const profile = useClinicProfile();
+  if (!profile) return null;
   return (
     <Helmet>
-      <script type="application/ld+json">{JSON.stringify(schema)}</script>
+      <script type="application/ld+json">{toJsonLd(getLocalBusinessSchema(profile))}</script>
     </Helmet>
   );
 };
@@ -61,7 +87,7 @@ export const LocalBusinessSchema = ({ schema }) => {
 export const BlogPostSchema = ({ schema }) => {
   return (
     <Helmet>
-      <script type="application/ld+json">{JSON.stringify(schema)}</script>
+      <script type="application/ld+json">{toJsonLd(schema)}</script>
     </Helmet>
   );
 };

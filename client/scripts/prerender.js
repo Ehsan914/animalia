@@ -25,23 +25,16 @@ import chromium from "@sparticuz/chromium"
 import { fileURLToPath } from "node:url"
 import { dirname, resolve, join } from "node:path"
 import { mkdirSync, writeFileSync } from "node:fs"
+import { STATIC_ROUTES } from "../src/routes/publicRoutes.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const clientRoot = resolve(__dirname, "..")
 const distDir = resolve(clientRoot, "dist")
 const PORT = 4180
 
-// Public routes to prerender. Keep in sync with public/sitemap.xml.
-// Admin routes and dynamic (:slug) routes are intentionally excluded.
-const ROUTES = [
-  "/",
-  "/services",
-  "/vets",
-  "/blogs",
-  "/about",
-  "/contact",
-  "/appointment",
-]
+// Public routes with a fixed URL (src/routes/publicRoutes.js). Admin routes
+// and dynamic (:slug) routes are intentionally excluded.
+const ROUTES = STATIC_ROUTES.map((route) => route.path)
 
 const READY_TIMEOUT = 20000
 const NAV_TIMEOUT = 60000
@@ -78,6 +71,19 @@ async function run() {
     for (const route of ROUTES) {
       const page = await browser.newPage()
       const url = `http://localhost:${PORT}${route}`
+      // A failed API call still yields a snapshot, just without that data
+      // (e.g. no contact details if the clinic profile is missing), so say so.
+      const failures = []
+      const isApiCall = (req) => ["xhr", "fetch"].includes(req.resourceType())
+      page.on("response", (res) => {
+        if (res.status() >= 400 && isApiCall(res.request())) failures.push(`${res.status()} ${res.url()}`)
+      })
+      page.on("requestfailed", (req) => {
+        if (isApiCall(req)) failures.push(`failed ${req.url()}`)
+      })
+      // Interactive-only widgets (the Turnstile spam check) stay out of the
+      // snapshot; see src/components/ui/SpamCheck.jsx.
+      await page.evaluateOnNewDocument(() => { window.__PRERENDER__ = true })
       try {
         await page.goto(url, { waitUntil: "networkidle0", timeout: NAV_TIMEOUT })
         try {
@@ -94,7 +100,12 @@ async function run() {
         // the production domain.
         const html = (await page.content()).replaceAll(`http://localhost:${PORT}`, "")
         snapshots.push({ route, html })
-        console.log(`  ✓ rendered ${route}`)
+        if (failures.length) {
+          console.warn(`  ! rendered ${route} with missing data — rebuild once the API serves:`)
+          for (const failure of failures) console.warn(`      ${failure}`)
+        } else {
+          console.log(`  ✓ rendered ${route}`)
+        }
       } finally {
         await page.close()
       }

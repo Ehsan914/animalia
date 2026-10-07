@@ -1,10 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react"
-import { getServices } from "../api/services"
-import { getVets } from "../api/vets"
-import { getReviews, getFAQs } from "../api/misc"
-import { getBlogs } from "../api/blogs"
-import { getActiveBanner } from "../api/banners"
-import { getActiveHeroBanner } from "../api/heroBanners"
+import { services, vets, reviews, faqs, blogs, banners, heroBanners, clinicProfile } from "../api/resources"
 import PageLoader from "../components/ui/PageLoader"
 
 const SiteDataContext = createContext(null)
@@ -15,6 +10,11 @@ export const useSiteData = () => {
     if (!ctx) throw new Error("useSiteData must be used within a SiteDataProvider")
     return ctx
 }
+
+// The clinic's contact details, address and hours, or null if they could not
+// be loaded.
+// eslint-disable-next-line react-refresh/only-export-components
+export const useClinicProfile = () => useSiteData().clinicProfile
 
 // Pulls a settled promise's value, logging (and emptying) any failure so one
 // bad request can never hang the whole site behind the loader.
@@ -33,8 +33,6 @@ const settle = (res, label, fallback = []) => {
     return res.value
 }
 
-const sortByOrder = (arr) => [...arr].sort((a, b) => a.order - b.order)
-
 export const SiteDataProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
     const [data, setData] = useState({
@@ -45,6 +43,7 @@ export const SiteDataProvider = ({ children }) => {
         blogs: { en: [], bn: [] },
         banner: null,
         heroBanner: null,
+        clinicProfile: null,
     })
     const hasFetched = useRef(false)
 
@@ -55,26 +54,27 @@ export const SiteDataProvider = ({ children }) => {
         const loadEverything = async () => {
             // All requests fire at once, so the total wait is the slowest single
             // request — not the sum of them.
-            const [services, vets, reviews, faqsEn, faqsBn, blogsEn, blogsBn, banner, heroBanner] =
+            const [serviceList, vetList, reviewList, faqsEn, faqsBn, blogsEn, blogsBn, banner, heroBanner, profile] =
                 await Promise.allSettled([
-                    getServices(),
-                    getVets(),
-                    getReviews(),
-                    getFAQs("en"),
-                    getFAQs("bn"),
-                    getBlogs("en"),
-                    getBlogs("bn"),
-                    getActiveBanner(),
-                    getActiveHeroBanner(),
+                    services.list(),
+                    vets.list(),
+                    reviews.list(),
+                    faqs.list({ lang: "en" }),
+                    faqs.list({ lang: "bn" }),
+                    blogs.list({ lang: "en" }),
+                    blogs.list({ lang: "bn" }),
+                    banners.list(),
+                    heroBanners.list(),
+                    clinicProfile.get(),
                 ])
 
             setData({
-                services: settle(services, "services"),
-                vets: settle(vets, "vets"),
-                reviews: settle(reviews, "reviews"),
+                services: settle(serviceList, "services"),
+                vets: settle(vetList, "vets"),
+                reviews: settle(reviewList, "reviews"),
                 faqs: {
-                    en: sortByOrder(settle(faqsEn, "FAQs (en)")),
-                    bn: sortByOrder(settle(faqsBn, "FAQs (bn)")),
+                    en: settle(faqsEn, "FAQs (en)"),
+                    bn: settle(faqsBn, "FAQs (bn)"),
                 },
                 blogs: {
                     en: settle(blogsEn, "blogs (en)"),
@@ -82,6 +82,7 @@ export const SiteDataProvider = ({ children }) => {
                 },
                 banner: settle(banner, "banner", null),
                 heroBanner: settle(heroBanner, "hero banner", null),
+                clinicProfile: settle(profile, "clinic profile", null),
             })
             setLoading(false)
         }
