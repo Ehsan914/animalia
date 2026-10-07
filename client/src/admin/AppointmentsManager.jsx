@@ -1,305 +1,95 @@
-import { useState, useEffect } from "react"
-import { Plus, Check, X } from "lucide-react"
-import Button from "../components/ui/Button"
-import EntityTable from "./EntityTable"
-import EntityModal from "./EntityModal"
-import useFetch from "../hooks/useFetch"
-import {
-    getAppointments,
-    createAppointmentAdmin,
-    updateAppointmentStatus,
-    updateAppointmentServices,
-    deleteAppointment,
-} from "../api/appointments"
-import { getServices } from "../api/services" // adjust import path if needed
+import { useEffect, useState } from "react"
+import { Check, X } from "lucide-react"
 import toast from "react-hot-toast"
-
-// ─── Column definitions ────────────────────────────────────────────────────────
+import Button from "../components/ui/Button"
+import useEntityManager from "./useEntityManager"
+import EntityManagerPage from "./EntityManagerPage"
+import { appointments, services } from "../api/resources"
+import {
+    APPOINTMENT_STATUS_LABEL, statusOptions, serviceTitles, formatDate, formatTime, toDateTimeInputs,
+} from "./records"
 
 const COLUMNS = [
-    { key: "pet_name",       label: "PET NAME" },
-    { key: "name",           label: "OWNER NAME" },
-    { key: "servicesLabel",  label: "SERVICES",  truncate: true },
-    { key: "statusLabel",    label: "STATUS" },
-    { key: "dateLabel",      label: "DATE" },
-    { key: "timeLabel",      label: "TIME" },
+    { key: "pet_name", label: "PET NAME" },
+    { key: "name",     label: "OWNER NAME" },
+    { key: "services", label: "SERVICES", render: serviceTitles },
+    { key: "status",   label: "STATUS",   render: (apt) => APPOINTMENT_STATUS_LABEL[apt.status] },
+    { key: "date",     label: "DATE",     render: (apt) => formatDate(apt.date) },
+    { key: "time",     label: "TIME",     render: (apt) => formatTime(apt.date) },
 ]
 
-// ─── Form fields ───────────────────────────────────────────────────────────────
-// serviceIds field uses the new "service-multiselect" type handled in EntityModal
-
-const FORM_FIELDS = [
-    { name: "name",       label: "Owner Name",   type: "text",                required: true,  placeholder: "e.g., John Doe" },
-    { name: "phone",      label: "Phone Number", type: "text",                required: true,  placeholder: "e.g., 01700000000" },
-    { name: "email",      label: "Email",        type: "email",               required: true,  placeholder: "e.g., owner@example.com" },
-    { name: "pet_name",   label: "Pet Name",     type: "text",                required: true,  placeholder: "e.g., Buddy" },
-    { name: "species",    label: "Species",      type: "text",                required: true,  placeholder: "e.g., Dog, Cat, Rabbit" },
-    { name: "date",       label: "Date",         type: "date",                required: true },
-    { name: "time",       label: "Time",         type: "time",                required: true },
-    { name: "serviceIds", label: "Services",     type: "service-multiselect", required: false },
-    { name: "message",    label: "Message",      type: "textarea",            required: false, placeholder: "Any additional notes from the owner..." },
-    { name: "status",     label: "Status",       type: "approval",            required: false },
-    { name: "vetComment", label: "Vet Comment",  type: "textarea",            required: false, placeholder: "Veterinarian's notes or comments..." },
+const formFields = (serviceOptions) => [
+    { name: "name",       label: "Owner Name",   type: "text",        required: true,  placeholder: "e.g., John Doe" },
+    { name: "phone",      label: "Phone Number", type: "text",        required: true,  placeholder: "e.g., 01700000000" },
+    { name: "email",      label: "Email",        type: "email",       required: true,  placeholder: "e.g., owner@example.com" },
+    { name: "pet_name",   label: "Pet Name",     type: "text",        required: true,  placeholder: "e.g., Buddy" },
+    { name: "species",    label: "Species",      type: "text",        required: true,  placeholder: "e.g., Dog, Cat, Rabbit" },
+    { name: "date",       label: "Date",         type: "date",        required: true },
+    { name: "time",       label: "Time",         type: "time",        required: true },
+    { name: "serviceIds", label: "Services",     type: "multiselect", options: serviceOptions },
+    { name: "message",    label: "Message",      type: "textarea",    placeholder: "Any additional notes from the owner..." },
+    { name: "status",     label: "Status",       type: "options",     options: statusOptions(APPOINTMENT_STATUS_LABEL) },
+    { name: "vetComment", label: "Vet Comment",  type: "textarea",    placeholder: "Veterinarian's notes or comments..." },
 ]
-
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-/**
- * Parse a DateTime from the API into a local date/time string pair.
- * Returns { dateStr: "YYYY-MM-DD", timeStr: "HH:MM" }
- */
-const splitDateTime = (isoString) => {
-    if (!isoString) return { dateStr: "", timeStr: "" }
-    const d = new Date(isoString)
-    const dateStr = d.toISOString().split("T")[0]
-    const timeStr = d.toTimeString().slice(0, 5)
-    return { dateStr, timeStr }
-}
-
-/**
- * Normalise an appointment coming from the API into the shape the table/form expects.
- * `services` from the API is an array of AppointmentService join records:
- *   [{ appointmentId, serviceId, service: { id, title, price, ... } }]
- */
-const formatAppointment = (apt) => {
-    const dateObj = apt.date ? new Date(apt.date) : null
-
-    // Flatten service titles from join table or plain array
-    const serviceItems = apt.services ?? []
-    const serviceTitles = serviceItems
-        .map((s) => s.service?.title ?? s.title ?? "")
-        .filter(Boolean)
-
-    // Collect service IDs for the form's multiselect
-    const serviceIds = serviceItems
-        .map((s) => s.serviceId ?? s.service?.id ?? s.id)
-        .filter((id) => id != null)
-
-    return {
-        ...apt,
-        serviceIds,
-        servicesLabel: serviceTitles.length > 0 ? serviceTitles.join(", ") : "—",
-        statusLabel:
-            apt.status === "approved"
-                ? "Confirmed"
-                : apt.status === "rejected"
-                ? "Cancelled"
-                : "Pending",
-        dateLabel: dateObj
-            ? dateObj.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
-            : "—",
-        timeLabel: dateObj
-            ? dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "—",
-    }
-}
 
 const emptyForm = () => ({
-    name: "",
-    phone: "",
-    email: "",
-    pet_name: "",
-    species: "",
-    date: "",
-    time: "",
-    serviceIds: [],
-    message: "",
-    status: undefined,
-    vetComment: "",
+    name: "", phone: "", email: "", pet_name: "", species: "", date: "", time: "",
+    serviceIds: [], message: "", status: "approved", vetComment: "",
+})
+
+const toForm = (apt) => ({
+    name:       apt.name,
+    phone:      apt.phone,
+    email:      apt.email,
+    pet_name:   apt.pet_name,
+    species:    apt.species,
+    ...toDateTimeInputs(apt.date),
+    serviceIds: apt.services.map((link) => link.serviceId),
+    message:    apt.message,
+    status:     apt.status,
+    vetComment: apt.vetComment,
+})
+
+// The form edits date and time separately, in the admin's local time.
+const toPayload = ({ date, time, ...appointment }) => ({
+    ...appointment,
+    date: new Date(`${date}T${time}`).toISOString(),
 })
 
 const AppointmentsManager = () => {
-    const [appointments, setAppointments] = useState([])
+    const manager = useEntityManager({ resource: appointments, label: "Appointment", emptyForm, toForm, toPayload })
     const [serviceOptions, setServiceOptions] = useState([])
-    const { execute, loading } = useFetch()
-
-    // Data loading
+    // Vet comments typed on pending cards, by appointment id, until confirmed.
+    const [draftComments, setDraftComments] = useState({})
 
     useEffect(() => {
-        let cancelled = false
+        services.adminList()
+            .then((list) => setServiceOptions(list.map((s) => ({ value: s.id, label: s.title, price: s.price }))))
+            .catch((err) => toast.error(`Could not load services: ${err.message}`))
+    }, [])
 
-        const fetchAll = async () => {
-            const [apts, svcs] = await Promise.all([
-                execute(getAppointments),
-                execute(getServices),
-            ])
-            if (cancelled) return
-            if (apts) setAppointments(apts.map(formatAppointment))
-            if (svcs) setServiceOptions(svcs.map((s) => ({ value: s.id, label: s.title, price: s.price })))
-        }
+    const pendingAppointments = manager.rows.filter((a) => a.status === "pending")
+    const commentFor = (apt) => draftComments[apt.id] ?? apt.vetComment
 
-        fetchAll()
-        return () => { cancelled = true }
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-    const refreshAppointments = async () => {
-        const data = await execute(getAppointments)
-        if (data) setAppointments(data.map(formatAppointment))
-    }
-
-    // Modal state
-
-    const [modalState, setModalState] = useState(null)
-
-    const pendingAppointments = appointments.filter((a) => a.status === "pending")
-
-    const openAdd = () =>
-        setModalState({ mode: "add", formData: emptyForm(), editingId: null })
-
-    const openEdit = (row) => {
-        const { dateStr, timeStr } = splitDateTime(row.date)
-        setModalState({
-            mode: "edit",
-            formData: {
-                name:       row.name,
-                phone:      row.phone ?? "",
-                email:      row.email ?? "",
-                pet_name:   row.pet_name,
-                species:    row.species,
-                date:       dateStr,
-                time:       timeStr,
-                serviceIds: row.serviceIds ?? [],
-                message:    row.message ?? "",
-                status:
-                    row.status === "approved" ? true
-                    : row.status === "rejected" ? false
-                    : undefined,
-                vetComment: row.vetComment ?? "",
-            },
-            editingId: row.id,
-        })
-    }
-
-    const closeModal = () => setModalState(null)
-
-    const handleChange = (name, value) =>
-        setModalState((prev) => ({
-            ...prev,
-            formData: { ...prev.formData, [name]: value },
-        }))
-
-    // Submit
-
-    const handleSubmit = async (data) => {
-        const { time, serviceIds, status: statusBool, vetComment, ...rest } = data
-
-        const status =
-            statusBool === true
-                ? "approved"
-                : statusBool === false
-                ? "rejected"
-                : "pending"
-
-        // Combine date + time into a single ISO DateTime string
-        const combinedDate =
-            rest.date && time
-                ? new Date(`${rest.date}T${time}`).toISOString()
-                : rest.date
-
-        const payload = {
-            ...rest,
-            date: combinedDate,
-            status,
-            serviceIds: serviceIds ?? [],
-        }
-
+    const decide = async (apt, status) => {
         try {
-            if (modalState.mode === "add") {
-                await execute(createAppointmentAdmin, payload)
-                toast.success("Appointment created successfully")
-            } else {
-                // Update status (and other scalar fields via same PUT endpoint)
-                await execute(updateAppointmentStatus, modalState.editingId, { status, vetComment: vetComment ?? "" })
-                // Update linked services
-                await execute(updateAppointmentServices, modalState.editingId, serviceIds ?? [])
-                toast.success("Appointment saved successfully")
-            }
-            await refreshAppointments()
-            closeModal()
+            manager.replaceRow(await appointments.setStatus(apt.id, { status, vetComment: commentFor(apt) }))
+            toast.success(status === "approved" ? "Appointment confirmed" : "Appointment cancelled")
         } catch (err) {
-            toast.error("Error: " + err)
+            toast.error(err.message)
         }
     }
-
-    // ── Delete ──────────────────────────────────────────────────────────────────
-
-    const handleDelete = async (row) => {
-        try {
-            await execute(deleteAppointment, row.id)
-            setAppointments((prev) => prev.filter((a) => a.id !== row.id))
-            toast.success("Appointment deleted successfully")
-        } catch (err) {
-            toast.error("Error: " + err)
-        }
-    }
-
-    // Quick approve / reject from pending section
-
-    const handleConfirm = async (apt) => {
-        try {
-            await execute(updateAppointmentStatus, apt.id, { status: "approved", vetComment: apt.vetComment ?? "" })
-            setAppointments((prev) =>
-                prev.map((a) =>
-                    a.id === apt.id
-                        ? { ...a, status: "approved", statusLabel: "Confirmed" }
-                        : a
-                )
-            )
-            toast.success("Appointment confirmed")
-        } catch (err) {
-            toast.error("Error: " + err)
-        }
-    }
-
-    const handleCancel = async (apt) => {
-        try {
-            await execute(updateAppointmentStatus, apt.id, { status: "rejected", vetComment: apt.vetComment ?? "" })
-            setAppointments((prev) =>
-                prev.map((a) =>
-                    a.id === apt.id
-                        ? { ...a, status: "rejected", statusLabel: "Cancelled" }
-                        : a
-                )
-            )
-            toast.success("Appointment cancelled")
-        } catch (err) {
-            toast.error("Error: " + err)
-        }
-    }
-
-    // Render
 
     return (
-        <div className="px-7.5 pb-20">
-            {/* Header */}
-            <div className="w-full flex justify-between items-center">
-                <div className="space-y-3 py-5">
-                    <h1 className="font-pixel-alt text-[30px] font-semibold leading-8">
-                        Appointments
-                    </h1>
-                    <p className="font-sans font-bold text-[16px]">
-                        Manage clinic appointments
-                    </p>
-                </div>
-                <Button
-                    onClick={openAdd}
-                    className="font-pixel-alt text-[20px] leading-6 flex items-center gap-1.5 px-4 py-2 shadow-mc-sharp-b"
-                >
-                    <Plus size={16} color="white" />
-                    Add Appointment
-                </Button>
-            </div>
-
-            {/* Table */}
-            <EntityTable
-                columns={COLUMNS}
-                rows={appointments.filter((a) => a.status !== "pending")}
-                loading={loading}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-            />
-
+        <EntityManagerPage
+            title="Appointments"
+            subtitle="Manage clinic appointments"
+            entityLabel="Appointment"
+            manager={manager}
+            columns={COLUMNS}
+            fields={formFields(serviceOptions)}
+            rows={manager.rows.filter((a) => a.status !== "pending")}
+        >
             {/* Pending Approvals */}
             <div className="w-full mt-12 flex flex-col gap-6.25">
                 <div>
@@ -325,16 +115,16 @@ const AppointmentsManager = () => {
                                     <h1 className="font-sans font-semibold">Owner Name: {apt.name}</h1>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <h1 className="font-sans font-semibold">Phone No.: {apt.phone ?? "—"}</h1>
-                                    <h1 className="font-sans font-semibold">Email: {apt.email ?? "—"}</h1>
+                                    <h1 className="font-sans font-semibold">Phone No.: {apt.phone}</h1>
+                                    <h1 className="font-sans font-semibold">Email: {apt.email}</h1>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <h1 className="font-sans font-semibold">Date: {apt.dateLabel}</h1>
-                                    <h1 className="font-sans font-semibold">Time: {apt.timeLabel}</h1>
+                                    <h1 className="font-sans font-semibold">Date: {formatDate(apt.date)}</h1>
+                                    <h1 className="font-sans font-semibold">Time: {formatTime(apt.date)}</h1>
                                 </div>
                                 <div className="flex flex-col gap-1.5">
                                     <h1 className="font-sans font-semibold">
-                                        Services: {apt.servicesLabel}
+                                        Services: {serviceTitles(apt)}
                                     </h1>
                                 </div>
                                 <div>
@@ -359,15 +149,8 @@ const AppointmentsManager = () => {
                                 <span className="font-sans font-black">Vet Comment:</span>
                                 <input
                                     type="text"
-                                    value={apt.vetComment ?? ""}
-                                    onChange={(e) => {
-                                        const updated = e.target.value
-                                        setAppointments((prev) =>
-                                            prev.map((a) =>
-                                                a.id === apt.id ? { ...a, vetComment: updated } : a
-                                            )
-                                        )
-                                    }}
+                                    value={commentFor(apt)}
+                                    onChange={(e) => setDraftComments((current) => ({ ...current, [apt.id]: e.target.value }))}
                                     placeholder="Vet comment goes here..."
                                     className="border-mc-primary border-2 px-4 py-4 font-sans text-sm outline-none"
                                 />
@@ -376,14 +159,14 @@ const AppointmentsManager = () => {
                             {/* Actions */}
                             <div className="flex gap-6.5">
                                 <Button
-                                    onClick={() => handleConfirm(apt)}
+                                    onClick={() => decide(apt, "approved")}
                                     className="flex items-center gap-1.5 font-pixel-alt text-[16px] text-white px-3 py-1.5 border-2 border-mc-primary bg-mc-grass hover:bg-mc-grass/80 hover:text-white transition-colors shadow-mc-flat-b cursor-pointer"
                                 >
                                     <Check size={16} />
                                     Accept
                                 </Button>
                                 <Button
-                                    onClick={() => handleCancel(apt)}
+                                    onClick={() => decide(apt, "rejected")}
                                     className="flex items-center gap-1.5 font-pixel-alt text-[16px] text-white px-3 py-1.5 border-2 border-red-700 bg-red-600 hover:bg-red-600/80 hover:text-white hover:border-red-600 transition-colors shadow-mc-flat-b cursor-pointer"
                                 >
                                     <X size={16} />
@@ -394,21 +177,7 @@ const AppointmentsManager = () => {
                     ))
                 )}
             </div>
-
-            {/* Modal */}
-            {modalState && (
-                <EntityModal
-                    fields={FORM_FIELDS}
-                    formData={modalState.formData}
-                    onChange={handleChange}
-                    onSubmit={handleSubmit}
-                    onClose={closeModal}
-                    mode={modalState.mode}
-                    entityLabel="Appointment"
-                    serviceOptions={serviceOptions}
-                />
-            )}
-        </div>
+        </EntityManagerPage>
     )
 }
 

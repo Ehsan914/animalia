@@ -4,8 +4,7 @@ import Button from "../components/ui/Button"
 import Reveal from "../components/ui/Reveal"
 import { useState } from "react"
 import { useSiteData } from "../context/SiteDataContext"
-import { SEO } from "../components/SEO"
-import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
+import { PageSEO } from "../components/SEO"
 
 const categories = [
   { name: "All", slug: "all" },
@@ -34,13 +33,7 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen">
-      <SEO
-        title={seoConfig.blog.title}
-        description={seoConfig.blog.description}
-        keywords={seoConfig.blog.keywords}
-        canonicalUrl={getCanonicalUrl("blogs")}
-        ogImage={getOgImage()}
-      />
+      <PageSEO page="blog" />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

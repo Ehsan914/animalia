@@ -105,7 +105,7 @@ const SpecialityCheckboxes = ({ options = [], selectedIds = [], onChange, onAdd,
                     </label>
 
                     {/* Options */}
-                    {options
+                    {[...options]
                         .sort((a, b) => a.label.localeCompare(b.label))
                         .map((opt) => {
                             const checked = selectedIds.includes(opt.value)

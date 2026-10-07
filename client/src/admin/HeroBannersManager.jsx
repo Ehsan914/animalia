@@ -1,18 +1,22 @@
-import { useState, useEffect } from "react"
-import { Plus } from "lucide-react"
-import Button from "../components/ui/Button"
-import EntityTable from "./EntityTable"
-import EntityModal from "./EntityModal"
-import useFetch from "../hooks/useFetch"
-import { getAllHeroBanners, createHeroBanner, updateHeroBanner, deleteHeroBanner } from "../api/heroBanners"
-import toast from 'react-hot-toast'
+import useEntityManager from "./useEntityManager"
+import EntityManagerPage from "./EntityManagerPage"
+import { heroBanners } from "../api/resources"
 
-const fmt = (value) =>
-    value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""
+// The server anchors calendar days to the clinic's timezone, so read them back
+// in that timezone; slicing the UTC string would show the start a day early.
+const CLINIC_TIME_ZONE = "Asia/Dhaka"
+const clinicDay = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: CLINIC_TIME_ZONE })
+const displayDay = (iso) =>
+    new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: CLINIC_TIME_ZONE })
+
+const LIVE_OPTIONS = [
+    { value: true,  label: "Live" },
+    { value: false, label: "Hidden" },
+]
 
 const COLUMNS = [
-    { key: "title", label: "TITLE", truncate: true },
-    { key: "dates", label: "DATE RANGE", render: (row) => `${fmt(row.startDate)} – ${fmt(row.endDate)}` },
+    { key: "title",  label: "TITLE", truncate: true },
+    { key: "dates",  label: "DATE RANGE", render: (row) => `${displayDay(row.startDate)} – ${displayDay(row.endDate)}` },
     { key: "active", label: "STATUS", align: "center", render: (row) => (row.active ? "● Live" : "Hidden") },
 ]
 
@@ -27,117 +31,42 @@ const FORM_FIELDS = [
     { name: "endDate",      label: "End Date",                    type: "date",     required: true },
     { name: "startTime",    label: "Start Time (optional)",       type: "time" },
     { name: "endTime",      label: "End Time (optional)",         type: "time" },
-    { name: "active",       label: "Show on site",                type: "options", options: [
-        { value: true,  label: "Live" },
-        { value: false, label: "Hidden" },
-    ]},
+    { name: "active",       label: "Show on site",                type: "options", options: LIVE_OPTIONS },
 ]
 
-const emptyForm = () => ({ title: "", description: "", location: "", mapUrl: "", imageUrl: "", partnerLogos: "", startDate: "", endDate: "", startTime: "", endTime: "", active: true })
+const emptyForm = () => ({
+    title: "", description: "", location: "", mapUrl: "", imageUrl: "", partnerLogos: "",
+    startDate: "", endDate: "", startTime: "", endTime: "", active: true,
+})
+
+const toForm = (banner) => ({
+    title:        banner.title,
+    description:  banner.description,
+    location:     banner.location,
+    mapUrl:       banner.mapUrl,
+    imageUrl:     banner.imageUrl,
+    // One link per line in the textarea; the server splits it again.
+    partnerLogos: banner.partnerLogos.join("\n"),
+    startDate:    clinicDay(banner.startDate),
+    endDate:      clinicDay(banner.endDate),
+    startTime:    banner.startTime,
+    endTime:      banner.endTime,
+    active:       banner.active,
+})
 
 const HeroBannersManager = () => {
-    const [banners, setBanners] = useState([])
-    const { execute, loading } = useFetch()
-
-    const reload = () => execute(getAllHeroBanners).then(setBanners)
-
-    useEffect(() => {
-        execute(getAllHeroBanners).then(setBanners)
-    }, [execute])
-
-    const [modalState, setModalState] = useState(null)
-
-    const openAdd = () => setModalState({ mode: "add", formData: emptyForm(), editingId: null })
-
-    const openEdit = (row) => setModalState({
-        mode: "edit",
-        formData: {
-            title:        row.title,
-            description:  row.description,
-            location:     row.location ?? "",
-            mapUrl:       row.mapUrl ?? "",
-            imageUrl:     row.imageUrl,
-            // Array → newline-separated text for the textarea; server re-parses it.
-            partnerLogos: (row.partnerLogos ?? []).join("\n"),
-            // ISO datetime → YYYY-MM-DD for the native date input.
-            startDate:    row.startDate ? row.startDate.slice(0, 10) : "",
-            endDate:      row.endDate ? row.endDate.slice(0, 10) : "",
-            startTime:    row.startTime ?? "",
-            endTime:      row.endTime ?? "",
-            active:       row.active,
-        },
-        editingId: row.id,
-    })
-
-    const closeModal = () => setModalState(null)
-
-    const handleChange = (name, value) => {
-        setModalState((prev) => ({ ...prev, formData: { ...prev.formData, [name]: value } }))
-    }
-
-    const handleSubmit = async (data) => {
-        try {
-            if (modalState.mode === "add") {
-                await execute(createHeroBanner, data)
-                toast.success("Hero banner created")
-            } else {
-                await execute(updateHeroBanner, modalState.editingId, data)
-                toast.success("Hero banner saved")
-            }
-            // Refetch so the single-live-banner rule (enforced server-side) is reflected.
-            await reload()
-            closeModal()
-        } catch (err) {
-            toast.error("Error: " + err)
-        }
-    }
-
-    const handleDelete = async (row) => {
-        try {
-            await execute(deleteHeroBanner, row.id)
-            setBanners((prev) => prev.filter((b) => b.id !== row.id))
-            toast.success("Hero banner deleted")
-        } catch (err) {
-            toast.error("Error: " + err)
-        }
-    }
+    // Saving a live banner hides the previous one on the server, so refetch.
+    const manager = useEntityManager({ resource: heroBanners, label: "Hero banner", emptyForm, toForm, reloadAfterSave: true })
 
     return (
-        <div className="px-7.5 pb-20">
-            <div className="w-full flex justify-between items-center">
-                <div className="space-y-3 py-5">
-                    <h1 className="font-pixel-alt text-[30px] font-semibold leading-8">Hero Banners</h1>
-                    <p className="font-sans font-bold text-[16px]">Promo slides shown in the homepage hero (one live at a time, auto-shown within its date range)</p>
-                </div>
-                <Button
-                    onClick={openAdd}
-                    className="font-pixel-alt text-[20px] leading-6 flex items-center gap-1.5 px-4 py-2 shadow-mc-sharp-b"
-                >
-                    <Plus size={16} color="white" />
-                    Add Hero Banner
-                </Button>
-            </div>
-
-            <EntityTable
-                columns={COLUMNS}
-                rows={banners}
-                loading={loading}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-            />
-
-            {modalState && (
-                <EntityModal
-                    fields={FORM_FIELDS}
-                    formData={modalState.formData}
-                    onChange={handleChange}
-                    onSubmit={handleSubmit}
-                    onClose={closeModal}
-                    mode={modalState.mode}
-                    entityLabel="Hero Banner"
-                />
-            )}
-        </div>
+        <EntityManagerPage
+            title="Hero Banners"
+            subtitle="Promo slides shown in the homepage hero (one live at a time, shown until its end date)"
+            entityLabel="Hero Banner"
+            manager={manager}
+            columns={COLUMNS}
+            fields={FORM_FIELDS}
+        />
     )
 }
 

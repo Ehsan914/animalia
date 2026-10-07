@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.js",
+    "build": "vite build && node scripts/sitemap.js && node scripts/prerender.js",
     "build:client": "vite build",
     "prerender": "node scripts/prerender.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.6.1",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.15.1",
     "lucide-react": "^1.3.0",
@@ -27,15 +30,19 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@sparticuz/chromium": "^149.0.0",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "jsdom": "^30.1.2",
     "postcss": "^8.5.10",
     "puppeteer": "^25.2.1",
-    "vite": "^8.0.4"
+    "vite": "^8.0.4",
+    "vitest": "^5.0.3"
   }
 }

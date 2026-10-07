@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axiosInstance from "../api/axiosInstance";
+import { login as requestToken } from "../api/resources";
 
 const useAuth = () => {
 
@@ -11,8 +11,7 @@ const useAuth = () => {
         setError(null);
 
         try {
-            const response = await axiosInstance.post('/auth/login', {email, password})
-            const { token } = response.data;
+            const { token } = await requestToken({ email, password });
 
             if (!token) {
                 setError('Login failed: No token received');
@@ -22,8 +21,7 @@ const useAuth = () => {
             localStorage.setItem('adminToken', token);
             return true;
         } catch (err) {
-            const message = err.response?.data?.message || 'Login Failed';
-            setError(message);
+            setError(err.message);
             return false;
         } finally {
             setLoading(false);

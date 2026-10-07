@@ -1,23 +1,23 @@
 import { Link } from "react-router"
-import { PixelPaw, PixelMedical, PixelHeart, WhatsApp } from "../components/icons/pixel-icons"
+import { PixelPaw, PixelHeart, WhatsApp } from "../components/icons/pixel-icons"
 import { Phone } from "lucide-react"
 import Button from "../components/ui/Button"
 import Reveal from "../components/ui/Reveal"
 import toast from "react-hot-toast"
-import { SEO, LocalBusinessSchema } from "../components/SEO"
-import { seoConfig, getCanonicalUrl, getOgImage, getLocalBusinessSchema } from "../utils/seo"
+import { PageSEO, LocalBusinessSchema } from "../components/SEO"
+import { buttonClassName } from "../components/ui/buttonClassName"
+import ClinicMap from "../components/clinic/ClinicMap"
+import OpeningHours from "../components/clinic/OpeningHours"
+import { useClinicProfile } from "../context/SiteDataContext"
+import { formatPhone, telHref, whatsAppHref, DEFAULT_WHATSAPP_MESSAGE } from "../utils/clinicProfile"
 
 export default function ContactPage() {
+  const profile = useClinicProfile()
+
   return (
     <div className="min-h-screen">
-      <SEO
-        title={seoConfig.contact.title}
-        description={seoConfig.contact.description}
-        keywords={seoConfig.contact.keywords}
-        canonicalUrl={getCanonicalUrl("contact")}
-        ogImage={getOgImage()}
-      />
-      <LocalBusinessSchema schema={getLocalBusinessSchema()} />
+      <PageSEO page="contact" />
+      <LocalBusinessSchema />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-12 md:py-16">
         <Reveal as="div" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -36,6 +36,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Info Cards */}
+      {profile && (
       <section className="py-12 md:py-16 bg-card">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -46,11 +47,11 @@ export default function ContactPage() {
               </div>
               <h3 className="font-pixel text-[10px] text-black mb-3">Our Location</h3>
               <p className="text-black text-sm leading-loose">
-                Ekushey Vobon, 677 West Shewrapara <br/>
-                Mirpur, Dhaka 1216 (Beside Shewrapara Metro Station)
+                {profile.streetAddress} <br/>
+                {profile.locality} {profile.postalCode}{profile.landmark && ` (${profile.landmark})`}
               </p>
               <a
-                href="https://maps.app.goo.gl/VyPFrAJ5fpv2Ghvd7"
+                href={profile.directionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block mt-4 text-sm text-mc-grass hover:underline"
@@ -69,19 +70,19 @@ export default function ContactPage() {
                 General Inquiries
               </p>
               <a
-                href="tel:+15551234567"
+                href={telHref(profile.phone)}
                 className="text-black font-medium hover:text-primary transition-colors"
               >
-                +880 1533 829537
+                {formatPhone(profile.phone)}
               </a>
               <p className="text-black text-sm mt-4 mb-2">
                 Emergency Line
               </p>
               <a
-                href="tel:+8801879388068"
+                href={telHref(profile.emergencyPhone)}
                 className="text-destructive font-medium"
               >
-                +880 1879 388068
+                {formatPhone(profile.emergencyPhone)}
               </a>
             </Reveal>
 
@@ -95,53 +96,34 @@ export default function ContactPage() {
                 General Questions
               </p>
               <a
-                href="mailto:animaliavetcare25@gmail.com"
+                href={`mailto:${profile.email}`}
                 className="text-foreground font-medium hover:text-primary transition-colors"
               >
-                animaliavetcare25@gmail.com
+                {profile.email}
               </a>
               <p className="text-black text-sm mt-4 mb-2">
                 Appointments
               </p>
               <a
-                href="mailto:animaliavetcare25@gmail.com"
+                href={`mailto:${profile.email}`}
                 className="text-black font-medium hover:text-primary transition-colors"
               >
-                animaliavetcare25@gmail.com
+                {profile.email}
               </a>
             </Reveal>
           </div>
         </div>
       </section>
+      )}
 
       {/* Map Section */}
+      {profile && (
       <section className="py-12 md:py-16 bg-background">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Map Placeholder */}
             <Reveal as="div" className="aspect-square lg:aspect-auto border-4 border-mc-primary shadow-mc-sharp relative overflow-hidden min-h-75">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.7949602483322!2d90.3747017!3d23.7903147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c10059bd215d%3A0xb58f1a635614a2ad!2sAnimalia%20Vet%20Care!5e0!3m2!1sen!2sbd!4v1780767823840!5m2!1sen!2sbd"
-                width="100%"
-                height="100%"
-                style={{ border: 0, position: 'absolute', inset: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Animalia Vet Care Location"
-              />
-              {/* Overlay label */}
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
-                <div className="bg-white/90 border-2 border-mc-primary px-3 py-2 text-center shadow-mc-flat">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <PixelMedical className="w-5 h-5 text-primary" />
-                    <span className="text-xs text-black font-medium">We are here!</span>
-                  </div>
-                  <p className="text-xs text-black font-bold max-w-50">
-                    677 West Shewrapara, Mirpur, Dhaka 1216
-                  </p>
-                </div>
-              </div>
+              <ClinicMap profile={profile} />
             </Reveal>
 
             {/* Operating Hours & WhatsApp */}
@@ -151,22 +133,12 @@ export default function ContactPage() {
                 <h3 className="font-pixel text-xs text-black mb-4">
                   Operating Hours
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-black font-bold">Saturday - Friday</span>
-                    <span className="font-bold text-black">10:00 AM - 9:00 PM</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-mc-emergency font-bold">Emergency Services</span>
-                    <span className="font-bold text-mc-emergency">24/7 Available</span>
-                  </div>
-                  
-                </div>
+                <OpeningHours profile={profile} />
               </div>
 
               {/* WhatsApp Button */}
               <a
-                href="https://wa.me/1879388068?text=Hi!%20I%20would%20like%20to%20inquire%20about%20your%20veterinary%20services."
+                href={whatsAppHref(profile.whatsappNumber, DEFAULT_WHATSAPP_MESSAGE)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full bg-mc-grass border-4 border-mc-primary shadow-mc-sharp p-6 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
@@ -195,19 +167,18 @@ export default function ContactPage() {
                     Book Visit
                   </Button>
                 </Link>
-                <Button className="w-full bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center">
-                    <a  
-                    href="tel:+8801879388068"
-                    >
-                      <p className="font-pixel text-[10px] text-white">Emergency</p>
-                    </a>
-                </Button>
-                                                  
+                <a
+                  href={telHref(profile.emergencyPhone)}
+                  className={buttonClassName("primary", "w-full bg-mc-emergency border-4 border-mc-heart shadow-mc-emergency p-4 text-center")}
+                >
+                  <p className="font-pixel text-[10px] text-white">Emergency</p>
+                </a>
               </div>
             </Reveal>
           </div>
         </div>
       </section>
+      )}
 
       {/* Contact Form Section */}
       <section className="py-12 md:py-16 bg-mc-creeper">
@@ -277,7 +248,8 @@ export default function ContactPage() {
             />
           </div>
           <Button
-            className="w-full"
+            className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!profile}
             onClick={() => {
               const name = document.getElementById("name").value.trim()
               const email = document.getElementById("email").value.trim()
@@ -288,8 +260,7 @@ export default function ContactPage() {
                 return
               }
               const text = `Hello! I contacted you via the website form.\n\n*Name:* ${name}\n*Email:* ${email}\n*Subject:* ${subject}\n*Message:* ${message}`
-              const encoded = encodeURIComponent(text)
-              window.open(`https://wa.me/8801879388068?text=${encoded}`, "_blank")
+              window.open(whatsAppHref(profile.whatsappNumber, text), "_blank")
 
               document.getElementById("name").value = ""
               document.getElementById("email").value = ""

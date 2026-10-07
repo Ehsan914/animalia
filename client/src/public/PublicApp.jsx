@@ -8,18 +8,27 @@ import AboutPage from '../pages/AboutPage';
 import ContactPage from '../pages/ContactPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import AppointmentPage from "../pages/AppointmentPage";
+import { PUBLIC_ROUTES } from "../routes/publicRoutes";
+
+// The component for each page in PUBLIC_ROUTES.
+const PAGES = {
+    home: HomePage,
+    services: ServicePage,
+    vets: VetsPage,
+    blog: BlogPage,
+    blogPost: BlogDetailPage,
+    about: AboutPage,
+    contact: ContactPage,
+    appointment: AppointmentPage,
+};
 
 const PublicApp = () => {
     return (
         <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/services" element={<ServicePage />} />
-            <Route path="/vets" element={<VetsPage />} />
-            <Route path="/blogs" element={<BlogPage />} />
-            <Route path="/blogs/:slug" element={<BlogDetailPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/appointment" element={<AppointmentPage />} />
+            {PUBLIC_ROUTES.map(({ page, path }) => {
+                const Page = PAGES[page];
+                return <Route key={path} path={path} element={<Page />} />;
+            })}
             <Route path="*" element={<NotFoundPage />} />
         </Routes>
     )

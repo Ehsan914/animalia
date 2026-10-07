@@ -1,17 +1,14 @@
 import { Toolbox, CalendarCheck, Star, Stethoscope } from "lucide-react";
-import AdminSidebar from "./AdminSidebar";
 import DashboardCards from "./DashboardCards";
 import { useEffect, useState } from "react";
-import useFetch from "../hooks/useFetch";
-import { getServices } from "../api/services";
-import { getVets } from "../api/vets";
-import { getAllReviews } from "../api/misc";
-import { getAppointments } from "../api/appointments";
+import toast from "react-hot-toast";
+import { services, vets, reviews, appointments } from "../api/resources";
 import EntityTable from "./EntityTable";
-import { PixelHeart } from "../components/icons/pixel-icons";
+import StarRating from "./StarRating";
+import { REVIEW_STATUS_LABEL, APPOINTMENT_STATUS_LABEL, serviceTitles } from "./records";
 import { useNavigate } from "react-router-dom";
 
-// helpers 
+// helpers
 
 const THIS_MONTH = (() => {
     const now = new Date();
@@ -33,88 +30,48 @@ const countPending = (items) => items.filter((i) => i.status === "pending").leng
 // columns
 
 const REVIEWCOLUMNS = [
-    { key: "author",      label: "NAME" },
-    { key: "ratingLabel", label: "RATING", render: (row) => <StarRating rating={row.rating} /> },
-    { key: "text",        label: "COMMENT" },
-    { key: "statusLabel", label: "STATUS" },
+    { key: "author", label: "NAME" },
+    { key: "rating", label: "RATING", render: (row) => <StarRating rating={row.rating} /> },
+    { key: "text",   label: "COMMENT" },
+    { key: "status", label: "STATUS", render: (row) => REVIEW_STATUS_LABEL[row.status] },
 ];
 
 const APPOINTMENTCOLUMNS = [
-    { key: "pet_name",      label: "PET NAME" },
-    { key: "name",          label: "OWNER NAME" },
-    { key: "servicesLabel", label: "SERVICES", truncate: true },
-    { key: "statusLabel",   label: "STATUS" },
+    { key: "pet_name", label: "PET NAME" },
+    { key: "name",     label: "OWNER NAME" },
+    { key: "services", label: "SERVICES", render: serviceTitles },
+    { key: "status",   label: "STATUS",   render: (row) => APPOINTMENT_STATUS_LABEL[row.status] },
 ];
-
-// formatters
-
-const formatReview = (r) => ({
-    ...r,
-    ratingLabel: `${r.rating}`,
-    statusLabel:
-        r.status === "approved" ? "Approved"
-        : r.status === "rejected" ? "Rejected"
-        : "Pending",
-});
-
-const formatAppointment = (apt) => {
-    const serviceItems = apt.services ?? [];
-    const serviceTitles = serviceItems
-        .map((s) => s.service?.title ?? s.title ?? "")
-        .filter(Boolean);
-    const serviceIds = serviceItems
-        .map((s) => s.serviceId ?? s.service?.id ?? s.id)
-        .filter((id) => id != null);
-
-    return {
-        ...apt,
-        serviceIds,
-        servicesLabel: serviceTitles.length > 0 ? serviceTitles.join(", ") : "—",
-        statusLabel:
-            apt.status === "approved" ? "Confirmed"
-            : apt.status === "rejected" ? "Cancelled"
-            : "Pending",
-    };
-};
-
-// sub-components
-
-const StarRating = ({ rating }) => (
-    <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((i) => (
-            <PixelHeart
-                key={i}
-                className={`w-4 h-4 ${i <= rating ? "text-mc-heart" : "text-gray-300"}`}
-            />
-        ))}
-    </div>
-);
 
 // Dashboard
 
 const Dashboard = () => {
-    const [services,     setServices]     = useState([]);
-    const [vets,         setVets]         = useState([]);
-    const [reviews,      setReviews]      = useState([]);
-    const [appointments, setAppointments] = useState([]);
+    const [data, setData] = useState({ services: [], vets: [], reviews: [], appointments: [] });
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const { execute, loading } = useFetch();
 
-    useEffect(() => { execute(getServices).then(setServices);         }, [execute]);
-    useEffect(() => { execute(getVets).then(setVets);                 }, [execute]);
-    useEffect(() => { execute(getAllReviews).then(setReviews);        }, [execute]);
-    useEffect(() => { execute(getAppointments).then(setAppointments); }, [execute]);
+    useEffect(() => {
+        const sources = { services, vets, reviews, appointments };
+        Promise.allSettled(Object.values(sources).map((resource) => resource.adminList()))
+            .then((results) => {
+                const loaded = {};
+                Object.keys(sources).forEach((name, i) => {
+                    const result = results[i];
+                    if (result.status === "fulfilled") {
+                        loaded[name] = result.value;
+                    } else {
+                        loaded[name] = [];
+                        toast.error(`Could not load ${name}: ${result.reason.message}`);
+                    }
+                });
+                setData(loaded);
+                setLoading(false);
+            });
+    }, []);
 
-    // derived values
-    const reviewRows      = reviews     .slice(-5).map(formatReview);
-    const appointmentRows = appointments.slice(-5).map(formatAppointment);
-
-    const reviewsThisMonth      = countThisMonth(reviews);
-    const appointmentsThisMonth = countThisMonth(appointments);
-
-    const reviewsPending      = countPending(reviews);
-    const appointmentsPending = countPending(appointments);
-
+    // Both lists come newest first from the server.
+    const reviewRows      = data.reviews.slice(0, 5);
+    const appointmentRows = data.appointments.slice(0, 5);
 
     return (
         <div className="flex flex-col gap-7.5 px-7.5 pb-10">
@@ -129,35 +86,35 @@ const Dashboard = () => {
                 <DashboardCards
                     cardName="Total Services"
                     icon={<Toolbox size={22} />}
-                    amount={services.length}
+                    amount={data.services.length}
                     loading={loading}
                     onClick={() => navigate('/admin/services')}
                 />
                 <DashboardCards
                     cardName="Active Vets"
                     icon={<Stethoscope size={22} />}
-                    amount={vets.length}
+                    amount={data.vets.length}
                     loading={loading}
                     onClick={() => navigate('/admin/vets')}
                 />
                 <DashboardCards
                     cardName="Total Reviews"
                     icon={<Star size={22} />}
-                    amount={reviews.length}
+                    amount={data.reviews.length}
                     loading={loading}
                     onClick={() => navigate('/admin/reviews')}
-                    thisMonth={reviewsThisMonth}
-                    pendingCount={reviewsPending}
+                    thisMonth={countThisMonth(data.reviews)}
+                    pendingCount={countPending(data.reviews)}
                     pendingLabel="reviews"
                 />
                 <DashboardCards
                     cardName="Total Appointments"
                     icon={<CalendarCheck size={22} />}
-                    amount={appointments.length}
+                    amount={data.appointments.length}
                     loading={loading}
                     onClick={() => navigate('/admin/appointments')}
-                    thisMonth={appointmentsThisMonth}
-                    pendingCount={appointmentsPending}
+                    thisMonth={countThisMonth(data.appointments)}
+                    pendingCount={countPending(data.appointments)}
                     pendingLabel="appointments"
                 />
             </div>

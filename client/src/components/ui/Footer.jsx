@@ -1,6 +1,8 @@
 import { AnimaliaLogoWhite, Heart, PixelHeart, PixelPaw, WhitePaw } from "../icons/pixel-icons";
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon } from '../icons/pixel-icons';
+import { useClinicProfile } from '../../context/SiteDataContext';
+import { formatPhone, telHref } from '../../utils/clinicProfile';
 
 const quickLinks = [
     { href: "/about", label: "About Us" },
@@ -18,6 +20,8 @@ const services = [
 
 
 export default function Footer() {
+    const profile = useClinicProfile()
+
     return (
         <footer className="bg-mc-primary text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -38,8 +42,11 @@ export default function Footer() {
                             Compassionate care for your beloved pets. Professional veterinary services you can trust.
                         </p>
                         <div className="flex gap-4">
-                            <a href="https://www.facebook.com/profile.php?id=61588473520737">
-                            <FacebookIcon className="w-8 h-8" />  </a>
+                            {profile?.facebookUrl && (
+                                <a href={profile.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                                    <FacebookIcon className="w-8 h-8" />
+                                </a>
+                            )}
                             <InstagramIcon className="w-8 h-8" />
                         </div>
                     </div>
@@ -79,17 +86,24 @@ export default function Footer() {
                     </div>
 
                     {/* Contact */}
+                    {profile && (
                     <div>
                         <h3 className="font-pixel text-[10px] mb-4 text-white">Contact</h3>
                         <ul className="space-y-2 text-sm text-white/80">
-                            <li>Ekushey Vobon, 677 West Shewrapara<br/> Mirpur, Dhaka 1216 <br/>(Beside Shewrapara Metro Station)</li>
-                            <li>Phone Number: 01533829537</li>
-                            <li>Email: animaliavetcare25@gmail.com</li>
                             <li>
-                                <span className="font-semibold text-white">Emergency: 24/7</span>
+                                {profile.streetAddress}<br/> {profile.locality} {profile.postalCode}
+                                {profile.landmark && <><br/>({profile.landmark})</>}
+                            </li>
+                            <li>Phone Number: <a href={telHref(profile.phone)} className="hover:text-white">{formatPhone(profile.phone)}</a></li>
+                            <li>Email: <a href={`mailto:${profile.email}`} className="hover:text-white">{profile.email}</a></li>
+                            <li>
+                                <span className="font-semibold text-white">
+                                    Emergency: {profile.emergency24h ? "24/7" : <a href={telHref(profile.emergencyPhone)}>{formatPhone(profile.emergencyPhone)}</a>}
+                                </span>
                             </li>
                         </ul>
                     </div>
+                    )}
                 </div>
                 {/* Bottom Bar */}
                 <div className="mt-12 pt-8 border-t-2 border-white/20 flex flex-col nav:flex-row items-center justify-between gap-4">

@@ -1,191 +1,85 @@
 import express from "express";
+import { z } from "zod";
 import prisma from "../prismaClient.js";
 import auth from "../middleware/auth.js";
+import { parseBody, parseId, text, optionalText } from "../lib/http.js";
+import { statusSchema } from "../lib/moderation.js";
+import { requireHuman } from "../lib/turnstile.js";
+import { formLimit } from "../lib/rateLimits.js";
 
 const router = express.Router();
 
-router.get('/', auth, async(req, res) => {
-    try {
-        const appointments = await prisma.appointment.findMany({
-            include: {
-                services: {
-                    include: {
-                        service: true
-                    }
-                }
-            }
-        });
-        res.json(appointments);
-    } catch (err) {
-        console.log(err.message);
-        res.status(503).json({ message: "Service unavailable" });
-    }
+const serviceIds = z.array(z.coerce.number().int().positive()).max(50, "too many services");
+const appointmentFields = {
+    name: text(100),
+    phone: text(30),
+    email: z.string().trim().pipe(z.email("must be a valid email")),
+    pet_name: text(100),
+    species: text(50),
+    date: z.coerce.date(),
+    message: optionalText(2000),
+};
+const requestSchema = z.object({
+    ...appointmentFields,
+    serviceIds: serviceIds.min(1, "select at least one service"),
+});
+const adminSchema = z.object({
+    ...appointmentFields,
+    serviceIds: serviceIds.default([]),
+    status: statusSchema,
+    vetComment: optionalText(2000),
+});
+const statusChangeSchema = z.object({
+    status: statusSchema,
+    vetComment: z.string().trim().max(2000).optional(),
 });
 
-router.post('/', async(req, res) => {
-    const { name, phone, email, pet_name, species, serviceIds, message, date: rawDate } = req.body;
+const include = { services: { include: { service: true } } };
+const linkServices = (ids) => ({ create: ids.map((serviceId) => ({ serviceId })) });
 
-    const date = new Date(rawDate);
-    if (isNaN(date.getTime())) {
-        return res.status(400).json({ message: "Invalid date" });
-    }
-
-    if (!name || !phone || !email || !pet_name || !species || !date) {
-        return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    try {
-        const appointment = await prisma.appointment.create({
-            data: {
-                name,
-                phone,
-                email,
-                pet_name,
-                species,
-                date,
-                message: message ?? "",
-                vetComment: "",
-                services: serviceIds?.length
-                    ? {
-                        create: serviceIds.map((serviceId) => ({ serviceId }))
-                    }
-                    : undefined,
-            },
-            include: {
-                services: { include: { service: true } }
-            }
-        });
-        res.status(201).json(appointment);
-    } catch (err) {
-        console.log(err.message);
-        res.status(500).json({ message: "Server error" });
-    }
+router.get("/admin", auth, async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.json(await prisma.appointment.findMany({ include, orderBy: { date: "desc" } }));
 });
 
-router.post('/admin', auth, async(req, res) => {
-    const { name, phone, email, pet_name, species, serviceIds, message, vetComment, date: rawDate } = req.body;
-
-    const date = new Date(rawDate);
-    if (isNaN(date.getTime())) {
-        return res.status(400).json({ message: "Invalid date" });
-    }
-
-    if (!name || !phone || !email || !pet_name || !species || !date) {
-        return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    try {
-        const appointment = await prisma.appointment.create({
-            data: {
-                name,
-                phone,
-                email,
-                pet_name,
-                species,
-                date,
-                message: message ?? "",
-                vetComment: vetComment ?? "",
-                status: "approved",
-                services: serviceIds?.length
-                    ? {
-                        create: serviceIds.map((serviceId) => ({ serviceId }))
-                    }
-                    : undefined,
-            },
-            include: {
-                services: { include: { service: true } }
-            }
-        });
-        res.status(201).json(appointment);
-    } catch (err) {
-        console.log(err.message);
-        res.status(500).json({ message: "Server error" });
-    }
+// Public booking request: always pending until the clinic confirms it.
+router.post("/", formLimit(), requireHuman, async (req, res) => {
+    const { serviceIds: ids, ...appointment } = parseBody(requestSchema, req.body);
+    res.status(201).json(await prisma.appointment.create({
+        data: { ...appointment, status: "pending", vetComment: "", services: linkServices(ids) },
+        include,
+    }));
 });
 
-router.put('/:id', auth, async(req, res) => {
-    const { status, vetComment } = req.body;
-
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    try {
-        const appointment = await prisma.appointment.update({
-            where: { id },
-            data: {
-                ...(status     !== undefined && { status }),
-                ...(vetComment !== undefined && { vetComment }),
-            },
-            include: {
-                services: { include: { service: true } }
-            }
-        });
-        res.status(200).json(appointment);
-    } catch (err) {
-        if (err.code === 'P2025') {
-            return res.status(404).json({ message: "Appointment not found!" });
-        }
-        console.log(err.message);
-        res.status(500).json({ message: "Server error" });
-    }
+router.post("/admin", auth, async (req, res) => {
+    const { serviceIds: ids, ...appointment } = parseBody(adminSchema, req.body);
+    res.status(201).json(await prisma.appointment.create({
+        data: { ...appointment, services: linkServices(ids) },
+        include,
+    }));
 });
 
-// Update linked services separately
-router.put('/:id/services', auth, async(req, res) => {
-    const { serviceIds } = req.body;
-
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    if (!Array.isArray(serviceIds)) {
-        return res.status(400).json({ message: "serviceIds must be an array" });
-    }
-
-    try {
-        // Replace all existing service links
-        await prisma.appointmentService.deleteMany({ where: { appointmentId: id } });
-
-        if (serviceIds.length > 0) {
-            await prisma.appointmentService.createMany({
-                data: serviceIds.map((serviceId) => ({ appointmentId: id, serviceId })),
-            });
-        }
-
-        const updated = await prisma.appointment.findUnique({
-            where: { id },
-            include: { services: { include: { service: true } } }
-        });
-
-        res.status(200).json(updated);
-    } catch (err) {
-        if (err.code === 'P2025') {
-            return res.status(404).json({ message: "Appointment not found!" });
-        }
-        console.log(err.message);
-        res.status(500).json({ message: "Server error" });
-    }
+// Full replace, services included, in one atomic write.
+router.put("/:id", auth, async (req, res) => {
+    const id = parseId(req.params.id);
+    const { serviceIds: ids, ...appointment } = parseBody(adminSchema, req.body);
+    res.json(await prisma.appointment.update({
+        where: { id },
+        data: { ...appointment, services: { deleteMany: {}, ...linkServices(ids) } },
+        include,
+    }));
 });
 
-router.delete('/:id', auth, async(req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid ID" });
-    }
+// Confirm or cancel, optionally with the vet's note.
+router.patch("/:id/status", auth, async (req, res) => {
+    const id = parseId(req.params.id);
+    const data = parseBody(statusChangeSchema, req.body);
+    res.json(await prisma.appointment.update({ where: { id }, data, include }));
+});
 
-    try {
-        await prisma.appointment.delete({ where: { id } });
-        res.status(200).json({ message: "Appointment deleted" });
-    } catch (err) {
-        if (err.code === 'P2025') {
-            return res.status(404).json({ message: "Appointment not found!" });
-        }
-        console.log(err.message);
-        res.status(500).json({ message: "Server error" });
-    }
+router.delete("/:id", auth, async (req, res) => {
+    await prisma.appointment.delete({ where: { id: parseId(req.params.id) } });
+    res.json({ message: "Deleted" });
 });
 
 export default router;

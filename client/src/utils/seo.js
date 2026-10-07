@@ -1,51 +1,8 @@
-// Canonical origin for the site (NO trailing slash). Update if the domain changes.
-export const SITE_URL = "https://www.animaliavetcare.com";
+import { formatPhone } from "./clinicProfile.js";
 
-// Helper to set common meta tags for different pages
-export const seoConfig = {
-  home: {
-    title: "Animalia Vet Care - Professional Veterinary Services",
-    description:
-      "Expert veterinary care for your pets. Experienced vets, comprehensive services, and 24/7 emergency support at Animalia Vet Care.",
-    keywords:
-      "veterinary clinic, pet care, vet services, animal hospital, pet health",
-  },
-  about: {
-    title: "About Us - Animalia Vet Care",
-    description:
-      "Learn about Animalia Vet Care, founded in 2024 by Dr. Md. Easin. We've treated 900+ pets with compassion and expertise. Meet our team of experienced veterinarians dedicated to your pet's health.",
-    keywords: "about veterinary clinic, our story, Dr. Md. Easin, pet care mission, trusted vet team",
-  },
-  services: {
-    title: "Our Services - Animalia Vet Care",
-    description:
-      "Comprehensive veterinary services including health check-ups, vaccinations, surgeries, deworming, grooming, pet medicines, and advanced diagnostics for dogs, cats, and small animals.",
-    keywords: "vet services, pet check-up, vaccinations, surgery, grooming, deworming, pet care, animal hospital",
-  },
-  vets: {
-    title: "Our Veterinarians - Animalia Vet Care",
-    description:
-      "Meet our team of experienced and qualified veterinarians dedicated to your pet's health.",
-    keywords: "veterinarians, pet doctors, vet team",
-  },
-  appointments: {
-    title: "Book an Appointment - Animalia Vet Care",
-    description: "Schedule a consultation with our veterinarians. Easy online booking available.",
-    keywords: "book appointment, vet consultation, schedule visit",
-  },
-  blog: {
-    title: "Pet Health Blog - Animalia Vet Care",
-    description:
-      "Read expert articles about pet health, care tips, and wellness advice from our veterinarians.",
-    keywords: "pet health, veterinary blog, pet care tips, animal wellness",
-  },
-  contact: {
-    title: "Contact Us - Animalia Vet Care",
-    description:
-      "Get in touch with us. Visit our clinic or call for emergency veterinary services.",
-    keywords: "contact us, vet clinic, emergency vet",
-  },
-};
+// Canonical origin for the site (NO trailing slash). Update if the domain changes.
+// Page titles and descriptions live in src/routes/publicRoutes.js.
+export const SITE_URL = "https://www.animaliavetcare.com";
 
 export const getOgImage = () => {
   return `${SITE_URL}/og-image.png`;
@@ -56,22 +13,24 @@ export const getCanonicalUrl = (path = "") => {
   return clean ? `${SITE_URL}/${clean}` : `${SITE_URL}/`;
 };
 
-// Schema.org structured data for local business
-export const getLocalBusinessSchema = () => {
+const EVERY_DAY = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+// Schema.org structured data for the clinic, built from its profile.
+export const getLocalBusinessSchema = (profile) => {
   return {
     "@context": "https://schema.org",
     "@type": "VeterinaryClinic",
     name: "Animalia Vet Care",
     description: "Professional veterinary clinic providing compassionate pet care services since 2024. 900+ pets treated by expert veterinarians.",
     url: `${SITE_URL}/`,
-    telephone: "+880 1533 829537",
-    email: "animaliavetcare25@gmail.com",
+    telephone: formatPhone(profile.phone),
+    email: profile.email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "677 West Shewrapara, Ekushey Vobon",
-      addressLocality: "Mirpur, Dhaka",
+      streetAddress: profile.streetAddress,
+      addressLocality: profile.locality,
       addressRegion: "Dhaka",
-      postalCode: "1216",
+      postalCode: profile.postalCode,
       addressCountry: "BD",
     },
     founder: {
@@ -80,9 +39,7 @@ export const getLocalBusinessSchema = () => {
     },
     foundingDate: "2024",
     image: `${SITE_URL}/logo.png`,
-    sameAs: [
-      "https://www.facebook.com/profile.php?id=61588473520737",
-    ],
+    sameAs: profile.facebookUrl ? [profile.facebookUrl] : [],
     knowsAbout: [
       "Pet Health Care",
       "Veterinary Surgery",
@@ -94,17 +51,17 @@ export const getLocalBusinessSchema = () => {
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: "10:00",
-        closes: "21:00",
+        dayOfWeek: EVERY_DAY,
+        opens: profile.opensAt,
+        closes: profile.closesAt,
       },
-      {
+      ...(profile.emergency24h ? [{
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        dayOfWeek: EVERY_DAY,
         opens: "00:00",
         closes: "23:59",
         description: "24/7 Emergency services available",
-      },
+      }] : []),
     ],
   };
 };

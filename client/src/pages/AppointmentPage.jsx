@@ -1,17 +1,15 @@
-"use client"
-
 import { useState } from "react"
 import { PixelPaw, PixelMedical, WhatsApp } from "../components/icons/pixel-icons"
 import Button from "../components/ui/Button"
+import { useSpamCheck } from "../components/ui/SpamCheck"
 import { LucidePhone } from "lucide-react"
-import { createAppointment } from "../api/appointments"
+import { appointments } from "../api/resources"
 import toast from "react-hot-toast"
-import { useSiteData } from "../context/SiteDataContext"
-import { SEO } from "../components/SEO"
-import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
+import { useSiteData, useClinicProfile } from "../context/SiteDataContext"
+import { PageSEO } from "../components/SEO"
+import { OPEN_DAYS, formatPhone, openingHours, telHref, whatsAppHref } from "../utils/clinicProfile"
 
 const SPECIES_PRESETS = ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Reptile"]
-const WHATSAPP_NUMBER = "8801879388068"
 
 export default function AppointmentPage() {
     const [formData, setFormData] = useState({
@@ -32,11 +30,11 @@ export default function AppointmentPage() {
 
     // Services from the shared site cache
     const { services: availableServices } = useSiteData()
+    const profile = useClinicProfile()
 
     // Submission state
     const [isSubmitting, setIsSubmitting] = useState(false)
-    // eslint-disable-next-line no-unused-vars
-    const [submitError, setSubmitError] = useState(null)
+    const spamCheck = useSpamCheck()
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -68,7 +66,6 @@ export default function AppointmentPage() {
         if (!resolvedSpecies.trim()) return
 
         setIsSubmitting(true)
-        setSubmitError(null)
 
         const dateTime = new Date(`${formData.date}T${formData.time}:00`).toISOString()
 
@@ -99,7 +96,7 @@ export default function AppointmentPage() {
         .join("\n")
 
         try {
-            await createAppointment({
+            await appointments.submit({
                 name: formData.ownerName,
                 phone: formData.phone,
                 email: formData.email,
@@ -108,9 +105,10 @@ export default function AppointmentPage() {
                 serviceIds: formData.selectedServices,
                 date: dateTime,
                 message: formData.notes,
+                turnstileToken: spamCheck.token,
             })
 
-            toast.success("Appointment booked! Redirecting to WhatsApp…")
+            toast.success(profile ? "Appointment booked! Redirecting to WhatsApp…" : "Appointment booked!")
 
             // Reset all form fields
             setFormData({
@@ -127,25 +125,18 @@ export default function AppointmentPage() {
             setSpeciesPreset("")
             setSpeciesCustom("")
 
-            const encoded = encodeURIComponent(whatsappMessage)
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`, "_blank")
+            if (profile) window.open(whatsAppHref(profile.whatsappNumber, whatsappMessage), "_blank")
             } catch (err) {
-            toast.error("Something went wrong. Please try again.")
-            setSubmitError(err)
+            toast.error(err.message)
             } finally {
             setIsSubmitting(false)
+            spamCheck.reset()
             }
     }
 
     return (
         <div className="min-h-screen">
-        <SEO
-            title={seoConfig.appointments.title}
-            description={seoConfig.appointments.description}
-            keywords={seoConfig.appointments.keywords}
-            canonicalUrl={getCanonicalUrl("appointment")}
-            ogImage={getOgImage()}
-        />
+        <PageSEO page="appointment" />
         {/* Hero Section */}
         <section className="bg-mc-green-light py-12 md:py-16">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -372,7 +363,7 @@ export default function AppointmentPage() {
                         value={formData.date}
                         onChange={handleChange}
                         required
-                        min={new Date().toISOString().split("T")[0]}
+                        min={new Date().toLocaleDateString("en-CA")}
                         className="w-full px-4 py-3 bg-white text-black border-4 border-mc-primary focus:border-mc-primary focus:outline-none"
                         />
                     </div>
@@ -420,10 +411,12 @@ export default function AppointmentPage() {
                 </div>
                 </div>
 
+                {spamCheck.widget}
+
                 {/* Submit */}
                 <Button
                 type="submit"
-                disabled={formData.selectedServices.length === 0 || !resolvedSpecies.trim() || isSubmitting}
+                disabled={formData.selectedServices.length === 0 || !resolvedSpecies.trim() || isSubmitting || !spamCheck.token}
                 className="w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                 <WhatsApp className="w-5 h-5" />
@@ -438,6 +431,7 @@ export default function AppointmentPage() {
         </section>
 
         {/* Contact Info */}
+        {profile && (<>
         <section className="py-12 bg-mc-creeper">
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
@@ -448,17 +442,17 @@ export default function AppointmentPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <a
-                href="tel:+8801879388068"
+                href={telHref(profile.emergencyPhone)}
                 className="flex items-center justify-center gap-3 p-4 bg-white border-4 border-mc-primary shadow-mc-sharp hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                 >
                 <LucidePhone className="w-6 h-6 text-mc-grass" />
                 <div>
                     <p className="text-xs text-black">Call Us</p>
-                    <p className="font-medium text-black">(+880) 1879-388068</p>
+                    <p className="font-medium text-black">{formatPhone(profile.emergencyPhone)}</p>
                 </div>
                 </a>
                 <a
-                href="https://wa.me/8801879388068"
+                href={whatsAppHref(profile.whatsappNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 p-4 bg-mc-grass border-4 border-mc-primary shadow-mc-sharp hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
@@ -482,16 +476,19 @@ export default function AppointmentPage() {
             <div className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 inline-block">
                 <div className="space-y-2 text-sm">
                 <div className="flex justify-between gap-8">
-                    <span className="text-black font-bold">Saturday - Friday</span>
-                    <span className="font-bold text-black">10:00 AM - 9:00 PM</span>
+                    <span className="text-black font-bold">{OPEN_DAYS}</span>
+                    <span className="font-bold text-black">{openingHours(profile)}</span>
                 </div>
+                {profile.emergency24h && (
                 <div className="pt-4 border-t-2 border-mc-primary mt-4">
                     <span className="text-mc-emergency font-bold">Emergency: 24/7</span>
                 </div>
+                )}
                 </div>
             </div>
             </div>
         </section>
+        </>)}
         </div>
     )
 }

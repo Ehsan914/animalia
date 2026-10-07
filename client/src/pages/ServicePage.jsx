@@ -5,8 +5,7 @@ import Reveal from "../components/ui/Reveal"
 import { useEffect, useState } from "react"
 import { getGDriveUrl } from "../utils/gdrive"
 import { useSiteData } from "../context/SiteDataContext"
-import { SEO } from "../components/SEO"
-import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
+import { PageSEO } from "../components/SEO"
 
 const ServicesPage = () => {
   const { services, faqs } = useSiteData()
@@ -27,13 +26,7 @@ const ServicesPage = () => {
 
   return (
     <div className="min-h-screen">
-      <SEO
-        title={seoConfig.services.title}
-        description={seoConfig.services.description}
-        keywords={seoConfig.services.keywords}
-        canonicalUrl={getCanonicalUrl("services")}
-        ogImage={getOgImage()}
-      />
+      <PageSEO page="services" />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

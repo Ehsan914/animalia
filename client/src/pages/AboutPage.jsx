@@ -6,8 +6,7 @@ import Button from "../components/ui/Button"
 import { getGDriveUrl } from "../utils/gdrive"
 import Reveal from "../components/ui/Reveal"
 import { metadata } from "../components/metadata/aboutmetadata"
-import { SEO } from "../components/SEO"
-import { seoConfig, getCanonicalUrl, getOgImage } from "../utils/seo"
+import { PageSEO } from "../components/SEO"
 
 const values = [
   {
@@ -41,13 +40,7 @@ const img_url = "https://drive.google.com/file/d/1BZmfJJvVVqKQ9yXmYlfUVgwXmkC8uz
 const AboutPage = () => {
   return (
     <div className="min-h-screen">
-      <SEO
-        title={seoConfig.about.title}
-        description={seoConfig.about.description}
-        keywords={seoConfig.about.keywords}
-        canonicalUrl={getCanonicalUrl("about")}
-        ogImage={getOgImage()}
-      />
+      <PageSEO page="about" />
       {/* Hero Section */}
       <section className="bg-mc-green-light py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,38 +1,35 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 import prisma from '../prismaClient.js';
+import { HttpError, parseBody } from '../lib/http.js';
+import { loginLimit } from '../lib/rateLimits.js';
 
 const router = express.Router();
 
-router.post('/login', async(req, res) => {
-    
+// Compared against when the email is unknown, so every login costs one bcrypt
+// check and the response time does not reveal which admin emails exist.
+const DUMMY_HASH = bcrypt.hashSync("animalia-no-such-admin", 10);
+
+const loginSchema = z.object({
+    email: z.string().trim().min(1, "is required"),
+    password: z.string().min(1, "is required"),
+});
+
+router.post('/login', loginLimit, async (req, res) => {
     res.set('Cache-Control', 'no-store');
 
-    const { email, password } = req.body;
+    const { email, password } = parseBody(loginSchema, req.body);
+    const user = await prisma.admin.findUnique({ where: { email } });
 
-    try {
-        const user = await prisma.admin.findUnique({
-            where: {
-                email: email
-            }
-        })
+    // One answer, and one bcrypt check, for unknown email and wrong password.
+    const matches = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+    const isValid = user && matches;
+    if (!isValid) throw new HttpError(401, "Invalid email or password");
 
-        if (!user) { return res.status(404).send({ message: "Invalid Credentials" })}
-
-        const passIsValid = bcrypt.compareSync(password, user.passwordHash);
-
-        if (!passIsValid) { return res.status(401).send({ message: "Invalid password" }) }
-
-        //console.log(user);
-
-        const token = jwt.sign( {id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-        res.json({ token })
-
-    } catch(err) {
-        console.log(err.message);
-        res.sendStatus(503);
-    }
-})
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token });
+});
 
 export default router;
