@@ -1,66 +1,36 @@
-import Button from "../components/ui/Button"
+import { NavLink } from "react-router-dom"
+import Icon from "../components/ui/Icon"
 import useAuth from "../hooks/useAuth"
-import { NavLink } from 'react-router';
-import { LayoutDashboard } from 'lucide-react';
-import { BriefcaseMedical } from 'lucide-react';
-import { Users } from 'lucide-react';
-import { BookOpen } from 'lucide-react';
-import { CircleQuestionMark } from 'lucide-react';
-import { MapPin } from 'lucide-react';
-import { Star } from 'lucide-react';
-import { Calendar } from 'lucide-react';
-import { Megaphone } from 'lucide-react';
-import { GalleryHorizontalEnd } from 'lucide-react';
+import { ADMIN_NAV } from "./adminNav"
+import { usePendingCounts } from "./pendingCounts"
 
-const AdminSidebar = () => {
-
-    const { logout } = useAuth();
-
-    const navLinks = [
-        { href: "/admin/dashboard", icon: <LayoutDashboard size={16}/>, label: "Dashboard" },
-        { href: "/admin/services", icon: <BriefcaseMedical size={16}/>, label: "Services" },
-        { href: "/admin/vets", icon: <Users size={16}/>, label: "Vets" },
-        { href: "/admin/blogs", icon: <BookOpen size={16}/>, label: "Blogs" },
-        { href: "/admin/faqs", icon: <CircleQuestionMark size={16}/>, label: "FAQs" },
-        { href: "/admin/reviews", icon: <Star size={16}/>, label: "Reviews" },
-        { href: "/admin/clinic-profile", icon: <MapPin size={16}/>, label: <span>Clinic<br/>Profile</span> },
-        { href: "/admin/appointments", icon: <Calendar size={16}/>, label: "Appointments" },
-        { href: "/admin/banners", icon: <Megaphone size={16}/>, label: "Banners" },
-        { href: "/admin/hero-banners", icon: <GalleryHorizontalEnd size={16}/>, label: <span>Hero<br/>Banners</span> },
-    ]
+// The navy sidebar in the production order, with what is waiting beside Reviews
+// and Appointments, and Sign out at the bottom. Phones slide it in from the menu.
+export default function AdminSidebar({ onNavigate }) {
+    const { logout } = useAuth()
+    const counts = usePendingCounts()
 
     return (
-        <div className="w-59 min-h-screen border-4 border-mc-primary">
-            <div className="flex flex-col gap-5">
-
-                {/* Sidebar Header */}
-                <div className="font-pixel-alt text-white text-xl font-medium pl-6.5 py-6 border-b-4 border-mc-primary bg-mc-grass">
-                    <span>ANIMALIA<br/>ADMIN PANEL</span>
-                </div>
-
-                {/* Sidebar Body */}
-                <div className="flex flex-col justify-between px-6 pb-7.5 min-h-[calc(90vh-50px)]">
-                    <div className="flex flex-col space-y-3">
-                        {navLinks.map((link) => (
-                                <NavLink 
-                                    key={link.href}
-                                    to={link.href}
-                                    className={({ isActive }) => 
-                                        `flex items-center  gap-2 text-sm font-semibold font-sans px-3 py-3 transition-colors
-                                        ${isActive ? 'bg-mc-grass text-white shadow-mc-sharp-b' : 'hover:bg-mc-creeper'}`
-                                    }>
-                                    {link.icon}
-                                    {link.label}
-                                </NavLink>
-                        ))}
-                    </div>
-                    <Button 
-                        onClick={ logout }
-                        className="font-pixel-alt text-xl font-medium py-1 w-full shadow-mc-sharp-b"
-                    >Sign out</Button>    
-                </div>
+        <aside className="side on-navy" id="admin-side" aria-label="Admin">
+            <div className="side-head">
+                <img src="/logo.svg" alt="" width="140" height="40" />
+                <span>Admin panel</span>
             </div>
-        </div>
+            <nav className="side-nav">
+                {ADMIN_NAV.map((item) => {
+                    const waiting = item.count ? counts[item.count] : 0
+                    return (
+                        <NavLink key={item.path} to={`/admin/${item.path}`} onClick={onNavigate}>
+                            <Icon name={item.icon} />
+                            {item.label}
+                            {waiting > 0 && <span className="count" aria-label={`${waiting} pending`}>{waiting}</span>}
+                        </NavLink>
+                    )
+                })}
+            </nav>
+            <button className="btn btn--paper side-out" type="button" onClick={logout}>
+                <Icon name="sign-out" />Sign out
+            </button>
+        </aside>
     )
 }
-export default AdminSidebar

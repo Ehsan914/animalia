@@ -21,13 +21,36 @@ export const formatTime = (hhmm) => {
     return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${suffix}`
 }
 
-// The clinic opens every day; the Bangladeshi week runs Saturday to Friday.
-export const OPEN_DAYS = "Saturday – Friday"
 
-export const openingHours = (profile) =>
-    `${formatTime(profile.opensAt)} – ${formatTime(profile.closesAt)}`
+// "+8801533829537" → "01533-829537", how the number is written and dialled in
+// Bangladesh; anything else is shown as stored.
+export const localPhone = (e164) => {
+    const match = /^\+880(\d{4})(\d+)$/.exec(e164)
+    return match ? `0${match[1]}-${match[2]}` : e164
+}
 
-export const shortAddress = (profile) =>
-    `${profile.streetAddress}, ${profile.locality} ${profile.postalCode}`
+export const toMinutes = (hhmm) => {
+    const [hours, minutes] = hhmm.split(":").map(Number)
+    return hours * 60 + minutes
+}
 
-export const DEFAULT_WHATSAPP_MESSAGE = "Hi! I would like to inquire about your veterinary services."
+// Minutes since midnight in Dhaka, regardless of the visitor's own time zone.
+export const dhakaMinutes = (date = new Date()) => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Dhaka",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    }).formatToParts(date)
+    const get = (type) => Number(parts.find((p) => p.type === type).value)
+    return get("hour") * 60 + get("minute")
+}
+
+// Live open/closed line for the header, hero and contact pages.
+export const openStatus = (profile, now = dhakaMinutes()) => {
+    const opens = toMinutes(profile.opensAt)
+    const closes = toMinutes(profile.closesAt)
+    if (now >= opens && now < closes) return { open: true, text: `Open now · until ${profile.closesAt}` }
+    if (now < opens) return { open: false, text: `Opens today at ${profile.opensAt}` }
+    return { open: false, text: `Closed now · opens ${profile.opensAt}` }
+}

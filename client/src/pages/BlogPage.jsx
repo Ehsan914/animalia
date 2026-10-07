@@ -1,198 +1,138 @@
-import { Link } from "react-router"
-import { PixelPaw } from "../components/icons/pixel-icons"
-import Button from "../components/ui/Button"
-import Reveal from "../components/ui/Reveal"
-import { useState } from "react"
+import { useEffect, useRef } from "react"
+import { Link, useSearchParams } from "react-router-dom"
+import Icon from "../components/ui/Icon"
+import Seg from "../components/ui/Seg"
+import PageHead from "../components/pages/PageHead"
+import CtaCard from "../components/pages/CtaCard"
+import PostCard from "../components/pages/PostCard"
+import BanglaFont from "../components/pages/BanglaFont"
+import useReveal from "../components/pages/useReveal"
+import { postFields } from "../components/pages/blogText"
 import { useSiteData } from "../context/SiteDataContext"
 import { PageSEO } from "../components/SEO"
+import "../styles/pages.css"
 
-const categories = [
-  { name: "All", slug: "all" },
-  { name: "Pet Care", slug: "pet-care" },
-  { name: "Nutrition", slug: "nutrition" },
-  { name: "Vaccination", slug: "vaccination" },
-  { name: "Surgery", slug: "surgery" },
+const ALL = { en: "All", bn: "সব" }
+
+const LANGS = [
+    { value: "en", label: "English" },
+    { value: "bn", label: <span lang="bn">বাংলা</span> },
 ]
 
-const NoBlogsFound = () => (
-  <div className="col-span-full flex flex-col items-center justify-center py-24 gap-4">
-    <div className="border-4 border-mc-primary shadow-mc-sharp bg-white p-8 flex flex-col items-center gap-4 max-w-sm w-full">
-      <PixelPaw className="w-16 h-16 text-mc-primary/30" />
-      <p className="font-pixel text-[10px] text-black text-center">No blogs yet</p>
-      <p className="text-sm text-black text-center">
-        Check back soon — our vets are busy writing!
-      </p>
+const EMPTY_COPY = {
+    en: {
+        title: "The first notes are on their way.",
+        text: "Our vets are writing practical guides on vaccines, deworming and everyday care. Until then, ask us anything at the clinic or on WhatsApp.",
+    },
+    bn: {
+        title: "শিগগিরই নতুন লেখা আসছে।",
+        text: "আমাদের চিকিৎসকেরা টিকা, কৃমিনাশক ও প্রতিদিনের যত্ন নিয়ে লিখছেন। ততক্ষণ যেকোনো প্রশ্ন ক্লিনিকে এসে বা হোয়াটসঅ্যাপে জিজ্ঞেস করুন।",
+    },
+}
+
+const NoPosts = ({ lang }) => (
+    <div className="posts-empty" lang={lang}>
+        <span className="posts-empty-icon"><Icon name="article" /></span>
+        <h2 className="h2">{EMPTY_COPY[lang].title}</h2>
+        <p>{EMPTY_COPY[lang].text}</p>
+        <div className="cta-actions">
+            <Link className="btn" to="/appointment">Book a visit <Icon name="arrow-right" className="icon-arrow" /></Link>
+            <Link className="text-link" to="/contact">Send a message</Link>
+        </div>
     </div>
-  </div>
 )
 
+// The new set of cards settles in, in reading order.
+const useSettleIn = (listRef, key) => {
+    useEffect(() => {
+        const list = listRef.current
+        if (!list || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+        const animations = [...list.children].map((li, i) => li.animate(
+            [{ opacity: 0, transform: "translateY(14px)" }, { opacity: 1, transform: "none" }],
+            { duration: 420, delay: i * 50, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "backwards" },
+        ))
+        return () => animations.forEach((a) => a.cancel())
+    }, [listRef, key])
+}
+
 const BlogPage = () => {
-  const { blogs } = useSiteData()
-  const [lang, setLang] = useState("en")
-  const blogPosts = blogs[lang] ?? []
+    const { blogs } = useSiteData()
+    const [params, setParams] = useSearchParams()
+    const listRef = useRef(null)
 
-  return (
-    <div className="min-h-screen">
-      <PageSEO page="blog" />
-      {/* Hero Section */}
-      <section className="bg-mc-green-light py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6">
-              <PixelPaw className="w-4 h-4 text-mc-grass" />
-              <span className="text-sm font-medium">Blog</span>
-            </div>
-            <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-black mb-6">
-              Pet Care Tips & Advice
-            </h1>
-            <p className="text-lg text-black">
-              Expert insights from our veterinary team to help you provide the best care
-              for your beloved pets. Browse our articles on health, nutrition, and more.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+    // Language and category live in the URL (?lang=bn&cat=…), like the demo.
+    const lang = params.get("lang") === "bn" ? "bn" : "en"
+    const posts = blogs[lang] ?? []
+    const categories = [...new Set(posts.map((post) => postFields(post, lang).category))]
+    const cat = categories.includes(params.get("cat")) ? params.get("cat") : null
+    const shown = cat ? posts.filter((post) => postFields(post, lang).category === cat) : posts
+    const hasAnyPosts = blogs.en?.length > 0 || blogs.bn?.length > 0
 
-      {/* Categories Filter */}
-      <section className="py-8 bg-white border-b-4 border-mc-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Category buttons */}
-            <div className="flex flex-wrap gap-2 flex-1">
-              {categories.map((category, index) => (
-                <button
-                  key={category.slug}
-                  className={`px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                    index === 0
-                      ? "bg-mc-grass text-white"
-                      : "bg-mc-green-light text-black hover:bg-mc-creeper"
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+    const setQuery = (next) => {
+        const q = new URLSearchParams()
+        if (next.lang === "bn") q.set("lang", "bn")
+        if (next.cat) q.set("cat", next.cat)
+        setParams(q, { replace: true })
+    }
 
-            {/* Lang toggle — right end */}
-            <div className="inline-flex border-4 border-mc-primary shadow-mc-sharp overflow-hidden ml-auto">
-              <button
-                onClick={() => setLang("en")}
-                className={`font-pixel text-[10px] px-4 py-2 cursor-pointer transition-colors ${
-                  lang === "en"
-                    ? "bg-mc-grass text-white"
-                    : "bg-white text-black hover:bg-mc-creeper"
-                }`}
-              >
-                EN
-              </button>
-              <div className="w-1 bg-mc-creeper" />
-              <button
-                onClick={() => setLang("bn")}
-                className={`font-pixel text-[10px] px-4 py-2 cursor-pointer transition-colors ${
-                  lang === "bn"
-                    ? "bg-mc-grass text-white"
-                    : "bg-white text-black hover:bg-mc-creeper"
-                }`}
-              >
-                BN
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+    useReveal(shown.length)
+    useSettleIn(listRef, `${lang}|${cat}`)
 
-      {/* Blog Grid */}
-      <section className="py-16 md:py-24 bg-mc-creeper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.length === 0
-              ? <NoBlogsFound />
-              : blogPosts.map((post, index) => (
-                  <Reveal
-                    as={Link}
-                    key={post.slug}
-                    href={`/blogs/${post.slug}`}
-                    delay={Math.min(index, 9) * 60}
-                    className="group bg-white border-4 border-mc-primary shadow-mc-sharp overflow-hidden hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-                  >
-                    {/* Thumbnail */}
-                    <div className="aspect-video bg-mc-green-light relative overflow-hidden">
-                      <div className="absolute inset-0 grid grid-cols-8 grid-rows-6">
-                        {Array.from({ length: 48 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`${
-                              (i + Math.floor(i / 8)) % 2 === 0
-                                ? "bg-mc-green-light"
-                                : "bg-mc-green-light/70"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <div className="absolute top-3 left-3 px-3 py-1 bg-mc-grass text-white text-xs font-medium">
-                        {lang === "en" ? post.categoryEn : post.categoryBn}
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <PixelPaw className="w-16 h-16 text-mc-primary/30" />
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                      <div className="flex items-center gap-3 text-xs text-black mb-2">
-                        <span>{new Date(post.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "bn-BD", { year: "numeric", month: "long", day: "numeric" })}</span>
-                        <span>•</span>
-                        <span>{post.author}</span>
-                      </div>
-                      <h2 className="font-pixel text-[10px] sm:text-xs text-black mb-2 group-hover:text-mc-grass transition-colors">
-                        {lang === "en" ? post.titleEn : post.titleBn}
-                      </h2>
-                      <p className="text-sm text-black line-clamp-2">
-                        {lang === "en" ? post.contentEn : post.contentBn}
-                      </p>
-                      <span className="inline-block mt-4 text-sm text-mc-grass font-medium group-hover:underline">
-                        Read more →
-                      </span>
-                    </div>
-                  </Reveal>
-                ))
-            }
-          </div>
-
-          {/* Load More */}
-          {blogPosts.length > 0 && (
-            <div className="text-center mt-12">
-              <Button>Load More Posts</Button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Newsletter CTA */}
-      <section className="py-16 bg-mc-grass">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-pixel text-lg sm:text-xl text-white mb-4">
-            Stay Updated
-          </h2>
-          <p className="text-white/80 mb-8">
-            Subscribe to our newsletter for the latest pet care tips and clinic updates.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="grow px-4 py-3 bg-white text-foreground border-4 border-mc-primary/30 focus:border-primary focus:outline-none"
+    return (
+        <>
+            <PageSEO page="blog" />
+            <BanglaFont />
+            <PageHead
+                title="Pet care notes"
+                lede="Practical advice from our vets on health, vaccines and everyday care, in English and Bangla."
             />
-            <Button
-              className="px-6 py-3 bg-white text-black font-pixel text-[10px]"
+
+            <section className="section">
+                <div className="wrap">
+                    {hasAnyPosts && (
+                        <div className="blog-tools">
+                            <div className="blog-cats" role="group" aria-label="Category" lang={lang}>
+                                {[null, ...categories].map((c) => (
+                                    <button
+                                        key={c ?? "all"}
+                                        type="button"
+                                        className="cat"
+                                        aria-pressed={c === cat}
+                                        onClick={() => setQuery({ lang, cat: c })}
+                                    >
+                                        {c ?? ALL[lang]}
+                                    </button>
+                                ))}
+                            </div>
+                            <Seg options={LANGS} value={lang} onChange={(next) => setQuery({ lang: next })} label="Language" />
+                        </div>
+                    )}
+                    {shown.length === 0 ? (
+                        <NoPosts lang={lang} />
+                    ) : (
+                        <ol ref={listRef} className={`posts${lang === "bn" ? " lang-bn" : ""}`} aria-live="polite" lang={lang}>
+                            {shown.map((post) => (
+                                <li key={post.slug}><PostCard post={post} lang={lang} /></li>
+                            ))}
+                        </ol>
+                    )}
+                </div>
+            </section>
+
+            <CtaCard
+                title="Have a question about your pet?"
+                text="Ask us in person, or send a message and we will reply on WhatsApp."
+                photo="/images/diagnosis.jpg"
+                photoAlt="Dr. Md. Easin examining with a diagnostic lamp"
+                photoPosition="50% 30%"
             >
-              Subscribe
-            </Button>
-          </form>
-        </div>
-      </section>
-    </div>
-  )
+                <Link className="btn btn--paper" to="/appointment">
+                    Book a visit <Icon name="arrow-right" className="icon-arrow" />
+                </Link>
+                <Link className="text-link" to="/contact">Send a message</Link>
+            </CtaCard>
+        </>
+    )
 }
 
 export default BlogPage

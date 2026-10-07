@@ -1,0 +1,212 @@
+/* Hero banner window, shared by the home page and the admin preview. Layout follows the
+   window's own width (container query), so the phone layout can be previewed on a desktop. */
+
+/* ---- Banner window ---- */
+
+.hero-window {
+  container: banner / inline-size;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hw-slides {
+  flex: 1;
+  display: grid;
+  touch-action: pan-y;
+}
+
+.hw-slide {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-rows: minmax(150px, 1fr) auto;
+  background: var(--bg);
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 500ms ease, visibility 0s linear 500ms;
+
+  &.is-active { opacity: 1; visibility: visible; transition: opacity 500ms ease; }
+  &[data-tone="light"] { color: var(--ink); }
+}
+
+/* The photo fills whatever room the slide gives it; it never sets the slide's height. */
+.hw-media {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  & img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hw-slide.is-active .hw-media img { animation: hw-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .hw-slide.is-active .hw-body > * { animation: hw-rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .hw-slide.is-active .hw-body > :nth-child(2) { animation-delay: 60ms; }
+  .hw-slide.is-active .hw-body > :nth-child(3) { animation-delay: 120ms; }
+  .hw-slide.is-active .hw-body > :nth-child(4) { animation-delay: 180ms; }
+}
+@keyframes hw-settle { from { transform: scale(1.06); } }
+@keyframes hw-rise { from { opacity: 0; transform: translateY(12px); } }
+
+.hw-body { padding: clamp(22px, 2.4vw, 32px); }
+.hero-window:has(.hw-controls:not([hidden])) .hw-body { padding-bottom: 76px; }
+
+.hw-when {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.85;
+  & .icon { width: 18px; height: 18px; flex: none; }
+}
+
+.hw-title {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 96, "SOFT" 50;
+  font-weight: 400;
+  font-size: clamp(26px, 2.3vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.hw-text {
+  display: -webkit-box;
+  margin: 10px 0 0;
+  max-width: 46ch;
+  font-size: 16px;
+  opacity: 0.86;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hw-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+  margin-top: 20px;
+  & .text-link { color: inherit; }
+}
+
+/* The banner's button takes the slide's colour: light button on dark slides, ink on light ones. */
+.hw-cta { --btn-bg: #fff; --btn-fg: var(--ink); --btn-shadow: rgba(0, 0, 0, 0.35); min-height: 48px; padding: 0 22px; }
+.hw-cta:hover { --btn-bg: var(--paper); }
+[data-tone="light"] .hw-cta { --btn-bg: var(--ink); --btn-fg: #fff; --btn-shadow: #000; }
+[data-tone="light"] .hw-cta:hover { --btn-bg: var(--navy); }
+
+.hw-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+  & .icon { width: 18px; height: 18px; }
+}
+a.hw-place:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Discount stamp ("30% OFF"): the clinic stamp pressed onto the slide's corner. */
+.hw-slide { position: relative; }
+
+.hw-stamp {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  width: 118px;
+  height: 118px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px var(--paper), inset 0 0 0 2px currentColor, 0 14px 26px -12px rgba(0, 0, 0, 0.55);
+  rotate: -12deg;
+
+  & b {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 96, "SOFT" 50;
+    font-weight: 500;
+    font-size: 40px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  & span {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hw-slide.is-active .hw-stamp { animation: hw-slam 520ms cubic-bezier(0.2, 1.4, 0.4, 1) 260ms both; }
+}
+@keyframes hw-slam {
+  from { opacity: 0; scale: 1.6; }
+  60% { opacity: 1; }
+}
+
+@container banner (max-width: 440px) {
+  .hw-stamp {
+    top: 10px;
+    right: 10px;
+    width: 76px;
+    height: 76px;
+    box-shadow: 0 0 0 3px var(--paper), inset 0 0 0 1.5px currentColor, 0 10px 18px -10px rgba(0, 0, 0, 0.55);
+    & b { font-size: 26px; }
+    & span { margin-top: 1px; font-size: 10px; letter-spacing: 0.18em; }
+  }
+}
+
+/* No photo: the colour and the headline carry the slide. */
+.hw-slide--text {
+  grid-template-rows: 1fr;
+  & .hw-body { align-self: end; }
+  & .hw-title { font-size: clamp(34px, 3.4vw, 52px); }
+}
+
+.hero-window .hw-controls {
+  position: absolute;
+  left: clamp(22px, 2.4vw, 32px);
+  right: clamp(16px, 2vw, 24px);
+  bottom: 16px;
+  color: #fff;
+  z-index: 1;
+}
+.hero-window[data-tone="light"] .hw-controls { color: var(--ink); }
+.hw-controls .timer-toggle { width: 38px; height: 38px; }
+
+/* Compact card (phones, narrow columns, the admin's phone preview): words left, square photo right. */
+@container banner (max-width: 440px) {
+  .hw-slide {
+    grid-template-columns: minmax(0, 1fr) 34%;
+    grid-template-rows: auto;
+  }
+  .hw-media { grid-column: 2; grid-row: 1; }
+  .hw-body { grid-column: 1; grid-row: 1; padding: 18px 16px 18px 20px; }
+  .hero-window:has(.hw-controls:not([hidden])) .hw-body { padding-bottom: 58px; }
+  .hw-when { font-size: 13px; & .icon { width: 16px; height: 16px; } }
+  .hw-title { margin-top: 8px; font-size: 22px; }
+  .hw-text { margin-top: 6px; font-size: 14px; -webkit-line-clamp: 2; }
+  .hw-foot { margin-top: 14px; }
+  .hw-cta { min-height: 42px; padding: 0 16px; font-size: 15px; }
+  .hw-place { display: none; }
+  .hw-slide--text { grid-template-columns: minmax(0, 1fr); & .hw-title { font-size: 28px; } }
+  /* Controls stay over the words, clear of the photo. */
+  .hero-window .hw-controls { left: 20px; right: calc(34% + 10px); bottom: 10px; }
+  .hero-window:has(.hw-slide--text.is-active) .hw-controls { right: 12px; }
+  .hw-controls .timer-toggle { width: 34px; height: 34px; }
+}

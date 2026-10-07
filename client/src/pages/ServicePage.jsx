@@ -1,188 +1,96 @@
-import { Link } from "react-router"
-import { PixelMedical, PixelPaw } from "../components/icons/pixel-icons"
-import Button from "../components/ui/Button"
-import Reveal from "../components/ui/Reveal"
-import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import Icon from "../components/ui/Icon"
+import PageHead from "../components/pages/PageHead"
+import CtaCard from "../components/pages/CtaCard"
+import FaqSection from "../components/pages/FaqSection"
+import useReveal from "../components/pages/useReveal"
+import useHashScroll from "../components/pages/useHashScroll"
+import { bookingHref, findService } from "../constants/serviceIcons"
 import { getGDriveUrl } from "../utils/gdrive"
-import { useSiteData } from "../context/SiteDataContext"
+import { getServiceIcon, serviceAnchor } from "../constants/serviceIcons"
+import { telHref } from "../utils/clinicProfile"
+import { useClinicProfile, useSiteData } from "../context/SiteDataContext"
 import { PageSEO } from "../components/SEO"
+import "../styles/pages.css"
 
-const ServicesPage = () => {
-  const { services, faqs } = useSiteData()
-  const [lang, setLang] = useState("en");
-  const faqList = faqs[lang] ?? [];
-
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (!hash) return;
-
-    const timer = setTimeout(() => {
-      const el = document.getElementById(hash);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="min-h-screen">
-      <PageSEO page="services" />
-      {/* Hero Section */}
-      <section className="bg-mc-green-light py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6">
-              <PixelMedical className="w-4 h-4 text-mc-grass" />
-              <span className="text-sm font-medium">Our Services</span>
-            </div>
-            <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-foreground mb-6">
-              Comprehensive Pet Care
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              From routine check-ups to specialized treatments, we offer a full range of
-              veterinary services to keep your pet healthy and happy throughout their life.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Services Grid */}
-      <section className="py-16 md:py-24 bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-16">
-            {services.map((service, index) => (
-              <Reveal
-                as="div"
-                key={service.id}
-                id={`service-${service.id}`}
-                delay={index * 80}
-                className={`scroll-mt-24 ${index % 2 === 1 ? "lg:flex-row-reverse" : ""}`}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                  {/* Icon Card */}
-                  <div className={`${index % 2 === 1 ? "lg:order-2" : ""}`}>
-                    <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-8 flex flex-col items-center justify-center aspect-square max-w-md mx-auto">
-                      <img
-                          src={getGDriveUrl(service.img_url)}
-                          alt={service.title}
-                          className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className={`${index % 2 === 1 ? "lg:order-1" : ""}`}>
-                    <h2 className="font-pixel text-lg sm:text-xl text-foreground mb-4">
-                      {service.title}
-                    </h2>
-                    <p className="text-muted-foreground mb-6">
-                      {service.description}
-                    </p>
-                    <h4 className="font-medium text-foreground mb-4">What&apos;s Included:</h4>
-                    <ul className="space-y-3 mb-8">
-                      {service.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <div className="w-5 h-5 bg-mc-grass flex items-center justify-center shrink-0 mt-0.5">
-                            <PixelPaw className="w-3 h-3 text-white" />
-                          </div>
-                          <span className="text-muted-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link to="/appointment">
-                      <Button className="text-[10px]">Book This Service</Button>
-                    </Link>
-                  </div>
-                </div>
-
-                {index < services.length - 1 && (
-                  <div className="mt-16 border-t-4 border-dashed border-mc-grass" />
-                )}
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 md:py-24 bg-mc-creeper">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="text-center mb-12">
-            <h2 className="font-pixel text-lg sm:text-xl text-black mb-4">
-              Common Questions
-            </h2>
-            <p className="text-black mb-5">
-              Have questions about our services? Here are some answers.
-            </p>
-
-            <div className="inline-flex border-4 border-mc-primary shadow-mc-sharp overflow-hidden">
-                <button
-                  onClick={() => setLang("en")}
-                  className={`font-pixel text-[10px] px-4 py-2 cursor-pointer transition-colors ${
-                    lang === "en"
-                      ? "bg-mc-grass text-white"
-                      : "bg-white text-black hover:bg-mc-creeper"
-                  }`}
-                >
-                  EN
-                </button>
-                <div className="w-1 bg-mc-creeper" />
-                <button
-                  onClick={() => setLang("bn")}
-                  className={`font-pixel text-[10px] px-4 py-2 cursor-pointer transition-colors ${
-                    lang === "bn"
-                      ? "bg-mc-grass text-white"
-                      : "bg-white text-black hover:bg-mc-creeper"
-                  }`}
-                >
-                  BN
-                </button>
-            </div>
-          </Reveal>
-
-          <div className="space-y-4">
-            {faqList.length === 0 ? (
-              <div className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <p className="font-pixel text-[10px] text-black">No FAQs found.</p>
-              </div>
-            ) : (
-              faqList.map((faq) => {
-                const question = lang === "en" ? faq.questionEn : faq.questionBn;
-                const answer = lang === "en" ? faq.answerEn : faq.answerBn;
-                return (
-                  <div key={faq.id} className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6">
-                    <h3 className="font-sans font-bold text-xl text-black mb-2">{question}</h3>
-                    <p className="text-[16px] text-black">{answer}</p>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-mc-grass">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-pixel text-lg sm:text-xl text-white mb-4">
-            Ready to Schedule?
-          </h2>
-          <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Book an appointment today and let us take care of your beloved companion.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/appointment">
-              <Button>Book Appointment</Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="outline" className="bg-white">Contact Us</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-    </div>
-  )
+// Each service's own action. Medicines and accessories are asked about, not booked.
+const ACTIONS = {
+    checkup: { label: "Book a check-up" },
+    vaccination: { label: "Book a vaccination" },
+    surgery: { label: "Book a surgery consult" },
+    medicine: { label: "Ask about a medicine", ask: true },
+    deworming: { label: "Book deworming" },
+    accessories: { label: "Ask what's in stock", ask: true },
+    grooming: { label: "Book grooming" },
+    diagnosis: { label: "Book a diagnosis" },
 }
 
+const ServiceRow = ({ service, isTarget }) => {
+    const action = ACTIONS[service.icon_key] ?? { label: "Book this service" }
+
+    return (
+        <article className="service" id={serviceAnchor(service)} data-target={isTarget || undefined} data-reveal>
+            <figure className="photo service-photo">
+                <img src={getGDriveUrl(service.img_url)} alt="" loading="lazy" />
+            </figure>
+            <div className="service-body">
+                <div className="service-name">
+                    <Icon name={getServiceIcon(service.icon_key)} />
+                    <h2>{service.title}</h2>
+                </div>
+                <p>{service.description}</p>
+                {service.features?.length > 0 && (
+                    <ul className="features">
+                        {service.features.map((feature, i) => <li key={i}>{feature}</li>)}
+                    </ul>
+                )}
+                <Link className="text-link" to={action.ask ? "/contact" : bookingHref(service)}>
+                    {action.label} <Icon name="arrow-right" className="icon-arrow" />
+                </Link>
+            </div>
+        </article>
+    )
+}
+
+const ServicesPage = () => {
+    const { services, faqs } = useSiteData()
+    const profile = useClinicProfile()
+    const target = useHashScroll()
+    const checkup = findService(services, "checkup")
+    useReveal(services.length)
+
+    return (
+        <>
+            <PageSEO page="services" />
+            <PageHead
+                title="What we do"
+                lede="Everyday care and the bigger moments, under one roof in Mirpur. Pick a service to book it."
+            />
+
+            <section className="section">
+                <div className="wrap">
+                    {services.map((service) => (
+                        <ServiceRow key={service.id} service={service} isTarget={target === serviceAnchor(service)} />
+                    ))}
+                </div>
+            </section>
+
+            <FaqSection faqs={faqs} />
+
+            <CtaCard
+                title="Not sure what your pet needs?"
+                text="Book a check-up and we will work it out together."
+                photo="/images/vaccination.jpg"
+                photoAlt="Dr. Md. Easin vaccinating a cat"
+                photoPosition="50% 40%"
+            >
+                <Link className="btn btn--paper" to={bookingHref(checkup)}>
+                    {checkup ? "Book a check-up" : "Book a visit"} <Icon name="arrow-right" className="icon-arrow" />
+                </Link>
+                {profile && <a className="text-link" href={telHref(profile.phone)}>Call the front desk</a>}
+            </CtaCard>
+        </>
+    )
+}
 
 export default ServicesPage

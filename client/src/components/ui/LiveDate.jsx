@@ -1,28 +1,19 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react"
 
-const LiveDate = () => {
-    const getFormattedDate = () => {
-        return new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-        });
-    };
+const TICK_MS = 10_000
+const FORMAT = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+    hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka",
+})
 
-    const [date, setDate] = useState(getFormattedDate());
+// The clinic's date and time (Dhaka), e.g. "Thursday, 8 October 2026 · 04:14".
+export default function LiveDate() {
+    const [now, setNow] = useState(() => new Date())
 
     useEffect(() => {
-        const interval = setInterval(() => {
-        setDate(getFormattedDate());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
+        const timer = setInterval(() => setNow(new Date()), TICK_MS)
+        return () => clearInterval(timer)
+    }, [])
 
-    return <span className="font-pixel-alt text-[20px]">{date}</span>;
-};
-
-export default LiveDate;
+    return <time dateTime={now.toISOString()}>{FORMAT.format(now).replace(" at ", " · ")}</time>
+}

@@ -42,7 +42,7 @@ export const SiteDataProvider = ({ children }) => {
         faqs: { en: [], bn: [] },
         blogs: { en: [], bn: [] },
         banner: null,
-        heroBanner: null,
+        heroBanners: [],
         clinicProfile: null,
     })
     const hasFetched = useRef(false)
@@ -54,7 +54,7 @@ export const SiteDataProvider = ({ children }) => {
         const loadEverything = async () => {
             // All requests fire at once, so the total wait is the slowest single
             // request — not the sum of them.
-            const [serviceList, vetList, reviewList, faqsEn, faqsBn, blogsEn, blogsBn, banner, heroBanner, profile] =
+            const [serviceList, vetList, reviewList, faqsEn, faqsBn, blogsEn, blogsBn, banner, heroBannerList, profile] =
                 await Promise.allSettled([
                     services.list(),
                     vets.list(),
@@ -81,7 +81,7 @@ export const SiteDataProvider = ({ children }) => {
                     bn: settle(blogsBn, "blogs (bn)"),
                 },
                 banner: settle(banner, "banner", null),
-                heroBanner: settle(heroBanner, "hero banner", null),
+                heroBanners: settle(heroBannerList, "hero banners"),
                 clinicProfile: settle(profile, "clinic profile", null),
             })
             setLoading(false)

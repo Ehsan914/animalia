@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatPhone, telHref, whatsAppHref, formatTime, openingHours, shortAddress } from "./clinicProfile"
+import { formatPhone, telHref, whatsAppHref, formatTime } from "./clinicProfile"
 import { getLocalBusinessSchema, getCanonicalUrl } from "./seo"
 
 const profile = {
@@ -39,11 +39,6 @@ describe("clinic profile helpers", () => {
     ])("shows %s as %s", (input, expected) => {
         expect(formatTime(input)).toBe(expected)
     })
-
-    it("describes hours and address", () => {
-        expect(openingHours(profile)).toBe("10:00 AM – 9:00 PM")
-        expect(shortAddress(profile)).toBe("Ekushey Vobon, 677 West Shewrapara, Mirpur, Dhaka 1216")
-    })
 })
 
 describe("SEO", () => {
@@ -67,5 +62,26 @@ describe("SEO", () => {
     it("builds canonical URLs from route paths", () => {
         expect(getCanonicalUrl("/")).toBe("https://www.animaliavetcare.com/")
         expect(getCanonicalUrl("/contact")).toBe("https://www.animaliavetcare.com/contact")
+    })
+})
+
+describe("local phone and open status", () => {
+    it("writes Bangladeshi mobile numbers the way people dial them locally", async () => {
+        const { localPhone } = await import("./clinicProfile")
+        expect(localPhone("+8801533829537")).toBe("01533-829537")
+        expect(localPhone("+15551234567")).toBe("+15551234567")
+    })
+
+    it("reads the clock in Dhaka, whatever the visitor's zone", async () => {
+        const { dhakaMinutes } = await import("./clinicProfile")
+        // 04:30 UTC is 10:30 in Dhaka (UTC+6, no daylight saving).
+        expect(dhakaMinutes(new Date("2026-10-08T04:30:00Z"))).toBe(10 * 60 + 30)
+    })
+
+    it("says whether the clinic is open, using the profile's hours", async () => {
+        const { openStatus } = await import("./clinicProfile")
+        expect(openStatus(profile, 9 * 60)).toEqual({ open: false, text: "Opens today at 10:00" })
+        expect(openStatus(profile, 10 * 60)).toEqual({ open: true, text: "Open now · until 21:00" })
+        expect(openStatus(profile, 21 * 60)).toEqual({ open: false, text: "Closed now · opens 10:00" })
     })
 })

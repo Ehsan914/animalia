@@ -1,50 +1,28 @@
-import {
-    Stethoscope,
-    Syringe,
-    Scissors,
-    Pill,
-    Bug,
-    ShoppingBag,
-    Sparkles,
-    Microscope,
-} from "lucide-react"
+import slugify from "slugify"
 
+// A service's icon_key (set in the admin) → its sprite icon (components/ui/IconSprite.jsx).
 export const SERVICE_ICON_MAP = {
-    checkup: {
-        Icon: Stethoscope,
-        label: "Health Check-up",
-    },
-    vaccination: {
-        Icon: Syringe,
-        label: "Vaccinations",
-    },
-    surgery: {
-        Icon: Scissors,
-        label: "Surgeries",
-    },
-    medicine: {
-        Icon: Pill,
-        label: "Pet Medicines",
-    },
-    deworming: {
-        Icon: Bug,
-        label: "Deworming",
-    },
-    accessories: {
-        Icon: ShoppingBag,
-        label: "Pet Accessories",
-    },
-    grooming: {
-        Icon: Sparkles,
-        label: "Grooming & Trimming",
-    },
-    diagnosis: {
-        Icon: Microscope,
-        label: "Diagnosis",
-    },
+    checkup: { icon: "stethoscope", label: "Health Check-up" },
+    vaccination: { icon: "syringe", label: "Vaccinations" },
+    surgery: { icon: "scissors", label: "Surgeries" },
+    medicine: { icon: "pill", label: "Pet Medicines" },
+    deworming: { icon: "bug", label: "Deworming" },
+    accessories: { icon: "shopping-bag", label: "Pet Accessories" },
+    grooming: { icon: "sparkle", label: "Grooming & Trimming" },
+    diagnosis: { icon: "microscope", label: "Diagnosis" },
 }
 
-// Helper: resolve icon component from a key, with a safe fallback
+// Sprite icon name for a service's icon_key, with a safe fallback.
 export function getServiceIcon(icon_key) {
-    return SERVICE_ICON_MAP[icon_key]?.Icon ?? Stethoscope
+    return SERVICE_ICON_MAP[icon_key]?.icon ?? "stethoscope"
 }
+
+// The id of a service's row on /services, so other pages can link straight to it
+// ("Health Check-up" → "health-check-up").
+export const serviceAnchor = (service) => slugify(service.title, { lower: true, strict: true })
+
+export const findService = (services, iconKey) => services.find((s) => s.icon_key === iconKey)
+
+// Booking link with that service pre-ticked on /appointment.
+export const bookingHref = (service) =>
+    service ? `/appointment?service=${encodeURIComponent(service.title)}` : "/appointment"

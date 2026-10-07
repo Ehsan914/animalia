@@ -51,6 +51,11 @@ export const errorHandler = (err, req, res, next) => {
 };
 
 // Shared field schemas.
+// The site origins allowed to call the API: CLIENT_URL holds one origin or a
+// comma-separated list (e.g. localhost plus the LAN address for phone testing).
+export const originList = (value) =>
+    (value || "http://localhost:5173").split(",").map((origin) => origin.trim()).filter(Boolean);
+
 export const text = (max = 10_000) => z.string().trim().min(1, "is required").max(max);
 export const optionalText = (max = 10_000) => z.string().trim().max(max).default("");
 export const order = z.coerce.number().int().min(1, "must be 1 or more");

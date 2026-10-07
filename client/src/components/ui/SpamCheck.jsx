@@ -29,6 +29,8 @@ export function useSpamCheck() {
                 <Turnstile
                     ref={ref}
                     siteKey={SITE_KEY}
+                    // The site is always paper-light; "auto" would turn the widget dark.
+                    options={{ theme: "light" }}
                     onSuccess={setToken}
                     onExpire={clear}
                     onError={clear}

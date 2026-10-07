@@ -1,27 +1,28 @@
 import useEntityManager from "./useEntityManager"
 import EntityManagerPage from "./EntityManagerPage"
 import { services } from "../api/resources"
+import { nextOrder } from "./formRules"
 
 const COLUMNS = [
-    { key: "title",        label: "SERVICE NAME" },
-    { key: "description",  label: "DESCRIPTION",  truncate: true },
-    { key: "price",        label: "PRICE" },
+    { label: "Service name", key: "title" },
+    { label: "Description", key: "short_desc", truncate: true },
+    { label: "Price", render: (s) => (s.price ? `৳${s.price}` : "—") },
 ]
 
 const FORM_FIELDS = [
-    { name: "title",       label: "Service Name",                   type: "text",        required: true,  placeholder: "e.g., Vaccination Service" },
-    { name: "short_desc",  label: "Short Description",              type: "textarea",    required: true,  placeholder: "Enter service short description..." },
-    { name: "description", label: "Description",                    type: "textarea",    required: true,  placeholder: "Enter service description..." },
-    { name: "price",       label: "Price",                          type: "number",      required: false, placeholder: "e.g., 500" },
-    { name: "img_url",     label: "Image URL",                      type: "url",         required: true,  placeholder: "https://example.com/image.jpg" },
-    { name: "features",    label: "Features (semicolon-separated)", type: "textarea",    required: false, placeholder: "e.g., Rabies vaccine; Health certificate" },
-    { name: "icon_key",    label: "Icon",                           type: "icon-picker", required: true  },
-    { name: "order",       label: "Order",                          type: "number",      required: true,  placeholder: "e.g., 1" },
+    { name: "title",       label: "Service Name",      required: true, max: 200 },
+    { name: "short_desc",  label: "Short Description", type: "textarea", rows: 2, required: true, max: 1000 },
+    { name: "description", label: "Description",       type: "textarea", rows: 5, required: true },
+    { name: "price",       label: "Price (৳)",         type: "number", min: 0, half: true, hint: "0 hides the price." },
+    { name: "order",       label: "Order",             type: "number", min: 1, required: true, half: true, hint: "Position on the website." },
+    { name: "img_url",     label: "Image URL",         type: "image", required: true, max: 2000, placeholder: "https://drive.google.com/file/d/…" },
+    { name: "features",    label: "Features",          type: "textarea", rows: 3, hint: "Separate items with a semicolon (;)." },
+    { name: "icon_key",    label: "Icon",              type: "icons", required: true },
 ]
 
 const emptyForm = (rows) => ({
-    title: "", short_desc: "", description: "", price: "", img_url: "",
-    features: "", icon_key: "", order: rows.length + 1,
+    title: "", short_desc: "", description: "", price: 0, img_url: "",
+    features: "", icon_key: "checkup", order: nextOrder(rows),
 })
 
 const toForm = (service) => ({
@@ -37,6 +38,7 @@ const toForm = (service) => ({
 
 const toPayload = (form) => ({
     ...form,
+    price: form.price || 0,
     features: form.features.split(";").map((f) => f.trim()).filter(Boolean),
 })
 
@@ -46,11 +48,14 @@ const ServicesManager = () => {
     return (
         <EntityManagerPage
             title="Services"
-            subtitle="Manage your available services"
-            entityLabel="Service"
+            subtitle="Manage the services listed on the website"
+            noun="service"
+            nameOf={(s) => s.title}
+            deleteNote="Appointments booked for it lose it from their list."
             manager={manager}
             columns={COLUMNS}
             fields={FORM_FIELDS}
+            rows={[...manager.rows].sort((a, b) => a.order - b.order)}
         />
     )
 }

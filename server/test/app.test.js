@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import bcrypt from "bcryptjs";
 import { publicApi, resetDatabase, prisma } from "./helpers.js";
+import { originList } from "../lib/http.js";
 
 beforeEach(resetDatabase);
 
@@ -50,5 +51,18 @@ describe("app", () => {
 
     it("reports health", async () => {
         await publicApi.get("/api/health").expect(200);
+    });
+});
+
+describe("allowed site origins (CLIENT_URL)", () => {
+    it("accepts one origin or a comma-separated list, e.g. localhost and the LAN address", () => {
+        expect(originList("https://animalia.example")).toEqual(["https://animalia.example"]);
+        expect(originList("http://localhost:5173, http://192.168.0.106:5173"))
+            .toEqual(["http://localhost:5173", "http://192.168.0.106:5173"]);
+    });
+
+    it("falls back to the local dev site", () => {
+        expect(originList(undefined)).toEqual(["http://localhost:5173"]);
+        expect(originList("")).toEqual(["http://localhost:5173"]);
     });
 });

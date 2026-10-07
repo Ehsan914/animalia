@@ -14,27 +14,24 @@ createRoot(document.getElementById('root')).render(
           position="bottom-right"
           toastOptions={{
             style: {
-              border: '4px solid #3E8E41',
-              boxShadow: '4px 4px 0px #000',
-              borderRadius: '0px',
-              fontFamily: 'Nunito',
-              fontWeight: '600',
-              fontSize: '14px',
+              border: '1px solid rgba(25, 47, 90, 0.16)',
+              boxShadow: '0 3px 0 #0b1730',
+              borderRadius: '16px',
+              fontFamily: 'Figtree, system-ui, sans-serif',
+              fontWeight: '500',
+              fontSize: '15px',
+              color: '#0f1d3a',
               background: '#fff',
             },
             error: {
-              style: {
-                border: '4px solid #CC3E41',
-                background: '#fff',
-              },
               iconTheme: {
-                primary: '#ff4444',
+                primary: '#d2452f',
                 secondary: '#fff',
               },
             },
             success: {
               iconTheme: {
-                primary: '#22c55e',
+                primary: '#192f5a',
                 secondary: '#fff',
               },
             },

@@ -1,118 +1,87 @@
-import { AnimaliaLogoWhite, Heart, PixelHeart, PixelPaw, WhitePaw } from "../icons/pixel-icons";
-import { Link } from 'react-router-dom';
-import { InstagramIcon, FacebookIcon } from '../icons/pixel-icons';
-import { useClinicProfile } from '../../context/SiteDataContext';
-import { formatPhone, telHref } from '../../utils/clinicProfile';
+import { Link } from "react-router-dom"
+import Icon from "./Icon"
+import { useClinicProfile, useSiteData } from "../../context/SiteDataContext"
+import { localPhone, telHref } from "../../utils/clinicProfile"
+import { serviceAnchor } from "../../constants/serviceIcons"
 
-const quickLinks = [
-    { href: "/about", label: "About Us" },
-    { href: "/services", label: "Services" },
-    { href: "/vets", label: "Our Vets" },
-    { href: "/blog", label: "Blog" },
+const QUICK_LINKS = [
+    { to: "/about", label: "About us" },
+    { to: "/services", label: "Services" },
+    { to: "/vets", label: "Our vets" },
+    { to: "/blogs", label: "Blog" },
 ]
 
-const services = [
-    { href: "/services#checkup", label: "Check-up" },
-    { href: "/services#consultations", label: "Consultations" },
-    { href: "/services#vaccinations", label: "Vaccinations" },
-    { href: "/services#surgeries", label: "Surgeries" },
-]
-
+const FOOTER_SERVICES = 4
 
 export default function Footer() {
     const profile = useClinicProfile()
+    const { services } = useSiteData()
 
     return (
-        <footer className="bg-mc-primary text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="grid grid-cols-1 nav:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {/* Brand */}
-                    <div className="space-y-4">
-                        <Link to='/' className='flex items-center gap-2'>
-                            <AnimaliaLogoWhite className='w-12 h-10'/>
-                            <div className='flex flex-col gap-1 font-pixel text-white'>
-                                <p className='m-0 text-xs tracking-wide'>Animalia</p>
-                                <div className='flex items-center gap-2'>
-                                    <p className='m-0 text-[10px]'>Vet Care</p>
-                                    <WhitePaw className='w-2.5 h-2.5'/>
-                                </div>
-                            </div>
+        <footer className="footer on-navy">
+            <div className="wrap">
+                <div className="footer-grid">
+                    <div className="footer-brand">
+                        <Link to="/" aria-label="Animalia Vet Care, home">
+                            <img src="/logo.svg" alt="" width="204" height="58" />
                         </Link>
-                        <p className="text-sm text-white/80">
-                            Compassionate care for your beloved pets. Professional veterinary services you can trust.
-                        </p>
-                        <div className="flex gap-4">
-                            {profile?.facebookUrl && (
-                                <a href={profile.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                                    <FacebookIcon className="w-8 h-8" />
+                        <p>Compassionate care for your beloved pets. Professional veterinary services you can trust.</p>
+                        {profile?.facebookUrl && (
+                            <div className="footer-social">
+                                <a href={profile.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Animalia Vet Care on Facebook">
+                                    <Icon name="facebook-logo" />
                                 </a>
-                            )}
-                            <InstagramIcon className="w-8 h-8" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <h3>Quick links</h3>
+                        <ul>
+                            {QUICK_LINKS.map((link) => (
+                                <li key={link.to}><Link to={link.to}>{link.label}</Link></li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {services.length > 0 && (
+                        <div>
+                            <h3>Services</h3>
+                            <ul>
+                                {services.slice(0, FOOTER_SERVICES).map((service) => (
+                                    <li key={service.id}>
+                                        <Link to={`/services#${serviceAnchor(service)}`}>{service.title}</Link>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Quick Links */}
-                    <div>
-                        <h3 className="font-pixel text-[10px] mb-4 text-white">Quick Links</h3>
-                        <ul className="space-y-2">
-                            {quickLinks.map((link) => (
-                                <li key={link.href}>
-                                    <Link
-                                        to={link.href}
-                                        className="text-sm text-white/80 hover:text-white transition-colors"
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Services */}
-                    <div>
-                        <h3 className="font-pixel text-[10px] mb-4 text-white">Services</h3>
-                        <ul className="space-y-2">
-                            {services.map((link) => (
-                                <li key={link.href}>
-                                    <Link
-                                        to={link.href}
-                                        className="text-sm text-white/80 hover:text-white transition-colors"
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Contact */}
                     {profile && (
-                    <div>
-                        <h3 className="font-pixel text-[10px] mb-4 text-white">Contact</h3>
-                        <ul className="space-y-2 text-sm text-white/80">
-                            <li>
-                                {profile.streetAddress}<br/> {profile.locality} {profile.postalCode}
-                                {profile.landmark && <><br/>({profile.landmark})</>}
-                            </li>
-                            <li>Phone Number: <a href={telHref(profile.phone)} className="hover:text-white">{formatPhone(profile.phone)}</a></li>
-                            <li>Email: <a href={`mailto:${profile.email}`} className="hover:text-white">{profile.email}</a></li>
-                            <li>
-                                <span className="font-semibold text-white">
-                                    Emergency: {profile.emergency24h ? "24/7" : <a href={telHref(profile.emergencyPhone)}>{formatPhone(profile.emergencyPhone)}</a>}
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
+                        <div>
+                            <h3>Contact</h3>
+                            <ul className="footer-contact">
+                                <li>
+                                    {profile.streetAddress}<br />{profile.locality} {profile.postalCode}
+                                    {profile.landmark && <><br /><span className="footer-muted">{profile.landmark}</span></>}
+                                </li>
+                                <li>Front desk <a href={telHref(profile.phone)}>{localPhone(profile.phone)}</a></li>
+                                <li>Email <a href={`mailto:${profile.email}`}>{profile.email}</a></li>
+                                <li className="footer-emergency">
+                                    <span className="dot dot--alert" />
+                                    <a href={telHref(profile.emergencyPhone)}>
+                                        {profile.emergency24h ? "Emergency 24/7" : "Emergency"} · {localPhone(profile.emergencyPhone)}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     )}
                 </div>
-                {/* Bottom Bar */}
-                <div className="mt-12 pt-8 border-t-2 border-white/20 flex flex-col nav:flex-row items-center justify-between gap-4">
-                    <p className="text-sm text-white/80">
-                        &copy; {new Date().getFullYear()} <b>Animalia Vet Clinic</b>. All rights reserved.
-                    </p>
-                    <p className="text-sm text-white/80 flex items-center gap-1">
-                        Made with <Heart className="w-4 h-4"/> for pets
-                    </p>
+                <div className="footer-base">
+                    <span>© {new Date().getFullYear()} <b>Animalia Vet Clinic</b>. All rights reserved.</span>
+                    <span className="footer-made">
+                        Made with <Icon name="heart" /><span className="sr-only">love</span> for pets
+                    </span>
                 </div>
             </div>
         </footer>

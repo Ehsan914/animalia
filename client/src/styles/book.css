@@ -1,0 +1,399 @@
+/* Booking page (/appointment). Ported from design-demo/book.css. Shared tokens, buttons,
+   seg and stamp live in global.css. Everything is scoped under .book so the generic names
+   (.field, .chip, .hint, .done) never reach other pages. */
+
+.book .line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+  & > span { display: inline-block; }
+}
+
+.book {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  grid-template-areas:
+    "head   head"
+    "form   slip"
+    "submit slip";
+  column-gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+  /* The sticky header takes its own space. */
+  padding-top: clamp(40px, 6vw, 80px);
+  padding-bottom: clamp(72px, 9vw, 120px);
+  /* The stamp overshoots while it slams; keep that inside the page so mobile never widens. */
+  overflow-x: clip;
+}
+
+.book-head {
+  grid-area: head;
+  margin-bottom: clamp(28px, 4vw, 48px);
+
+  & .lede { margin-top: 14px; color: var(--muted); max-width: 46ch; }
+}
+
+.book-title {
+  font-size: clamp(42px, 4.6vw, 64px);
+  color: var(--navy);
+}
+
+.book-form { grid-area: form; min-width: 0; }
+
+/* ---------- Steps: ruled sections, like the rows of a health card ---------- */
+
+.book .step {
+  min-width: 0;
+  margin: 0;
+  padding: 26px 0 34px;
+  border: 0;
+  border-top: 2px solid var(--navy);
+
+  & > legend {
+    float: left;
+    width: 100%;
+    display: flex;
+    align-items: baseline;
+    padding: 0;
+    margin: 0 0 20px;
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 72, "SOFT" 50;
+    font-size: 28px;
+    line-height: 1.2;
+    color: var(--navy);
+  }
+  & > legend + * { clear: both; }
+}
+
+.book .field { margin-bottom: 18px; }
+
+.book .field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.book label,
+.book .label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.book .optional { margin-left: 6px; font-weight: 400; color: var(--muted); font-size: 14px; }
+
+.book input,
+.book textarea {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid rgba(25, 47, 90, 0.28);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &::placeholder { color: #8b94a9; }
+  &:hover { border-color: rgba(25, 47, 90, 0.5); }
+  &:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 4px rgba(59, 92, 154, 0.18);
+  }
+  &[aria-invalid="true"] { border-color: var(--alert); }
+}
+
+.book textarea {
+  display: block;
+  height: auto;
+  padding: 14px 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.book .field-error {
+  margin: 6px 0 0;
+  color: #b1361f;
+  font-size: 14px;
+  font-weight: 500;
+  &:empty { display: none; }
+}
+
+.book .hint { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+
+.book .other-species { margin-top: 12px; }
+
+/* ---------- Service chips: the check grows in, the chip makes room for it ---------- */
+
+.book .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.book .chip {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid rgba(25, 47, 90, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--navy);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, scale 120ms ease;
+
+  & .icon {
+    width: 0;
+    height: 18px;
+    margin-right: 0;
+    opacity: 0;
+    transition: width 300ms var(--ease-spring), margin-right 300ms var(--ease-spring), opacity 160ms ease;
+  }
+  &:hover { border-color: var(--navy); }
+  &:active { scale: 0.97; }
+
+  &[aria-pressed="true"] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    & .icon { width: 18px; margin-right: 8px; opacity: 1; }
+  }
+}
+
+/* ---------- Day strip and time grid ---------- */
+
+.book .days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.book .times {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.book .day,
+.book .time {
+  border: 1.5px solid rgba(25, 47, 90, 0.2);
+  background: #fff;
+  color: var(--navy);
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, translate 180ms var(--ease-spring);
+
+  &:hover:not(:disabled) { border-color: var(--navy); }
+  &[aria-checked="true"] {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    box-shadow: 0 3px 0 var(--navy-deep);
+    translate: 0 -2px;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    color: rgba(25, 47, 90, 0.3);
+    background: transparent;
+    border-style: dashed;
+  }
+}
+
+.book .day {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 0 12px;
+  border-radius: 14px;
+
+  & small {
+    font: 600 12px/1.2 var(--font-body);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  & b {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 72, "SOFT" 30;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.1;
+  }
+  &[aria-checked="true"] small { color: var(--sky); }
+}
+
+.book .time {
+  height: 46px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Appointment slip ---------- */
+
+.book .slip-col {
+  grid-area: slip;
+  position: sticky;
+  top: calc(var(--nav-h) + 32px);
+}
+
+.book .slip {
+  position: relative;
+  padding: 26px 28px 24px;
+  border-radius: 18px;
+  background: #fbfaf6;
+  box-shadow:
+    0 30px 60px -30px rgba(15, 29, 58, 0.35),
+    0 0 0 1px rgba(25, 47, 90, 0.08);
+}
+
+.book .slip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--navy);
+
+  & p { margin: 0; }
+}
+
+.book .slip-kicker {
+  font: 700 12px/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+
+.book .slip-brand {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--navy);
+}
+
+.book .slip-rows {
+  margin: 0;
+
+  & > div {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  & dt {
+    padding-top: 5px;
+    font: 600 12px/1.2 var(--font-body);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  & dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 48, "SOFT" 50;
+    font-size: 20px;
+    line-height: 1.3;
+    color: var(--navy);
+    overflow-wrap: anywhere;
+  }
+  & dd.is-empty { color: rgba(25, 47, 90, 0.28); }
+}
+
+.book .slip-foot {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Positioned on the rows (not the slip) so the address below can wrap freely. */
+.book .slip-body { position: relative; }
+
+.book .slip-stamp {
+  position: absolute;
+  right: -6px;
+  bottom: -10px;
+  width: 124px;
+  height: 124px;
+  rotate: -10deg;
+  opacity: 0;
+}
+
+/* ---------- Submit + done ---------- */
+
+.book .submit-row {
+  grid-area: submit;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+  padding-top: 26px;
+  border-top: 2px solid var(--navy);
+
+  & .submit-note { margin: 0; color: var(--muted); font-size: 15px; }
+  & .btn:disabled { cursor: progress; opacity: 0.7; }
+}
+
+/* The Turnstile check sits on its own line below the button. */
+.book .submit-spam {
+  flex-basis: 100%;
+  & .field-error { margin-top: 0; }
+}
+
+.book .btn--big {
+  min-height: 58px;
+  padding: 0 32px;
+  font-size: 17px;
+}
+
+/* The confirmation takes the place of the page heading: one headline at a time. */
+.book .done {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: start;
+  padding-top: 32px;
+  border-top: 2px solid var(--navy);
+
+  & .lede { margin: 14px 0 28px; color: var(--muted); max-width: 44ch; }
+}
+
+.book .done-icon {
+  display: block;
+  width: 52px;
+  height: 52px;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+}
+
+.book .done-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+
+@media (max-width: 899px) {
+  .book {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "form" "slip" "submit";
+  }
+  .book .slip-col { position: static; margin: 4px 0 28px; }
+  .book .slip { padding: 22px 20px 20px; }
+  .book .slip-stamp { width: 104px; height: 104px; right: -8px; top: -1px; bottom: auto; }
+  .book .field-pair { grid-template-columns: 1fr; gap: 0; }
+  .book .days { gap: 5px; }
+  .book .day { padding: 8px 0 10px; border-radius: 12px; & b { font-size: 21px; } & small { font-size: 12px; letter-spacing: 0.02em; } }
+  .book .times { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .book .time { font-size: 14px; }
+  .book .done { grid-column: 1; grid-row: 1; padding-bottom: 28px; }
+  .book .submit-row .btn { width: 100%; }
+}
+
+@media (min-width: 900px) {
+  .book.is-done .slip-col { grid-row: 1 / 4; }
+}

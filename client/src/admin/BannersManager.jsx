@@ -1,32 +1,35 @@
 import useEntityManager from "./useEntityManager"
 import EntityManagerPage from "./EntityManagerPage"
+import Chip from "./Chip"
 import { banners } from "../api/resources"
 
-const TYPE_OPTIONS = [
-    { value: "info",      label: "Info" },
-    { value: "promo",     label: "Promo" },
-    { value: "emergency", label: "Emergency" },
-]
+const TYPES = { info: "Info", promo: "Promo", emergency: "Emergency" }
+const TYPE_OPTIONS = Object.entries(TYPES).map(([value, label]) => ({ value, label, danger: value === "emergency" }))
 const LIVE_OPTIONS = [
     { value: true,  label: "Live" },
     { value: false, label: "Hidden" },
 ]
 
 const COLUMNS = [
-    { key: "message", label: "MESSAGE", truncate: true },
-    { key: "type",    label: "TYPE",   render: (row) => TYPE_OPTIONS.find((t) => t.value === row.type)?.label ?? row.type },
-    { key: "active",  label: "STATUS", align: "center", render: (row) => (row.active ? "● Live" : "Hidden") },
+    { label: "Message", key: "message", truncate: true },
+    { label: "Type",    render: (b) => <Chip tone={b.type === "emergency" ? "urgent" : "info"}>{TYPES[b.type] ?? b.type}</Chip> },
+    { label: "Status",  render: (b) => (b.active ? <Chip tone="live">Live</Chip> : <Chip tone="off">Hidden</Chip>) },
 ]
 
 const FORM_FIELDS = [
-    { name: "message",  label: "Message",                 type: "text", required: true, placeholder: "e.g., Free Rabies Vaccination · 7–13 June" },
-    { name: "type",     label: "Type",                    type: "options", options: TYPE_OPTIONS },
-    { name: "ctaLabel", label: "Button Label (optional)", type: "text", placeholder: "e.g., Learn more" },
-    { name: "ctaUrl",   label: "Button Link (optional)",  type: "text", placeholder: "e.g., /services or https://..." },
-    { name: "active",   label: "Show on site",            type: "options", options: LIVE_OPTIONS },
+    { name: "message",  label: "Message",      required: true, max: 500 },
+    { name: "type",     label: "Type",         type: "options", required: true, options: TYPE_OPTIONS },
+    { name: "ctaLabel", label: "Button Label", max: 100, half: true },
+    { name: "ctaUrl",   label: "Button Link",  type: "url", links: "button", max: 2000, half: true, placeholder: "/services or https://…" },
+    { name: "active",   label: "Show on site", type: "options", required: true, options: LIVE_OPTIONS, hint: "Making this one live hides the others." },
 ]
 
-const emptyForm = () => ({ message: "", type: "promo", ctaLabel: "", ctaUrl: "", active: true })
+const check = (form) => ({
+    ...(form.ctaLabel && !form.ctaUrl ? { ctaUrl: "Add where the button goes." } : {}),
+    ...(form.ctaUrl && !form.ctaLabel ? { ctaLabel: "Add the button text." } : {}),
+})
+
+const emptyForm = () => ({ message: "", type: "promo", ctaLabel: "", ctaUrl: "", active: false })
 
 const toForm = ({ message, type, ctaLabel, ctaUrl, active }) => ({ message, type, ctaLabel, ctaUrl, active })
 
@@ -37,11 +40,13 @@ const BannersManager = () => {
     return (
         <EntityManagerPage
             title="Banners"
-            subtitle="Manage the site-wide announcement bar (one is live at a time)"
-            entityLabel="Banner"
+            subtitle="The strip above the site header. Only one can be live at a time"
+            noun="banner"
+            nameOf={() => "this banner"}
             manager={manager}
             columns={COLUMNS}
             fields={FORM_FIELDS}
+            check={check}
         />
     )
 }

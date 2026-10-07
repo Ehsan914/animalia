@@ -47,7 +47,8 @@ export const vets = createResource("/vets")
 export const specialities = createResource("/specialities")
 export const faqs = createResource("/faqs")
 export const blogs = createResource("/blogs")
-// list() on banners returns the one live banner, or null.
+// list() on banners returns the one live banner, or null; on heroBanners, every
+// live hero banner (active and not yet ended), earliest start first.
 export const banners = createResource("/banners")
 export const heroBanners = createResource("/hero-banners")
 export const reviews = createModeratedResource("/reviews")
