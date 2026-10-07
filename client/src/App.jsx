@@ -1,33 +1,36 @@
-import Button from "./components/ui/Button";
-import Navbar from './components/ui/Navbar';
-import { InstagramIcon, FacebookIcon } from './components/icons/pixel-icons';
-import { Routes, Route } from "react-router-dom";
-import AdminApp from "./admin/AdminApp";
-import Footer from "./components/ui/Footer";
-import PublicApp from "./public/PublicApp";
-import { SiteDataProvider } from "./context/SiteDataContext";
-import ScrollToTop from "./components/ui/ScrollToTop";
-import BannerBar from "./components/ui/BannerBar";
+import { lazy, Suspense } from "react"
+import { Routes, Route } from "react-router-dom"
+import PublicApp from "./public/PublicApp"
+import Navbar from "./components/ui/Navbar"
+import Footer from "./components/ui/Footer"
+import BannerBar from "./components/ui/BannerBar"
+import IconSprite from "./components/ui/IconSprite"
+import ScrollToTop from "./components/ui/ScrollToTop"
+import PageLoader from "./components/ui/PageLoader"
+import { SiteDataProvider } from "./context/SiteDataContext"
 
+// The admin (and its stylesheet) loads only when someone opens /admin.
+const AdminApp = lazy(() => import("./admin/AdminApp"))
 
 const App = () => {
   return (
     <>
-    <ScrollToTop />
-    <Routes>
-      <Route path="/admin/*" element={<AdminApp />} />
-      <Route path="/*" element={
-        <SiteDataProvider>
-          <BannerBar />
-          <Navbar />
-          <PublicApp />
-          <Footer />
-        </SiteDataProvider>}
-      />
-
-    </Routes>
+      <IconSprite />
+      <ScrollToTop />
+      <Routes>
+        <Route path="/admin/*" element={<Suspense fallback={<PageLoader />}><AdminApp /></Suspense>} />
+        <Route path="/*" element={
+          <SiteDataProvider>
+            <BannerBar />
+            <Navbar />
+            <main className="site-main">
+              <PublicApp />
+            </main>
+            <Footer />
+          </SiteDataProvider>}
+        />
+      </Routes>
     </>
   )
 }
 export default App;
-

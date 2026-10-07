@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { act, renderHook, waitFor } from "@testing-library/react"
 
-vi.mock("react-hot-toast", () => ({ default: { success: vi.fn(), error: vi.fn() } }))
+vi.mock("./feedback", () => ({ UNDO_MS: 5000, default: { show: vi.fn(), error: vi.fn(), dismiss: vi.fn() } }))
 
-const { default: toast } = await import("react-hot-toast")
+const { default: toast } = await import("./feedback")
 const { default: useEntityManager } = await import("./useEntityManager")
 
 // An in-memory adapter for a resource keyed by slug.
@@ -44,6 +44,10 @@ const loaded = async (resource, options) => {
 }
 
 beforeEach(() => { vi.clearAllMocks() })
+afterEach(() => { vi.useRealTimers() })
+
+// The Undo callback offered with the last toast.
+const lastUndo = () => toast.show.mock.calls.at(-1)[1].undo
 
 describe("useEntityManager", () => {
     it("loads the admin list", async () => {
@@ -69,7 +73,7 @@ describe("useEntityManager", () => {
 
         expect(result.current.rows.map((r) => r.slug)).toEqual(["new"])
         expect(result.current.modal).toBeNull()
-        expect(toast.success).toHaveBeenCalledWith("Blog added")
+        expect(toast.show).toHaveBeenCalledWith("Blog added")
     })
 
     it("edits by the record's original key, even when the key changes", async () => {
@@ -105,14 +109,81 @@ describe("useEntityManager", () => {
         expect(result.current.rows.map((r) => r.slug)).toEqual(["x"])
     })
 
-    it("removes a record", async () => {
+    it("keeps a record whose delete is waiting hidden when a save refetches the list", async () => {
+        const resource = fakeResource([{ id: 1, slug: "a" }, { id: 2, slug: "b" }])
+        const { result } = await loaded(resource, { reloadAfterSave: true })
+
+        act(() => result.current.remove(result.current.rows[0]))
+        act(() => result.current.openEdit(result.current.rows[0]))
+        await act(() => result.current.submit({ slug: "b", title: "B" }))
+
+        expect(resource.adminList).toHaveBeenCalledTimes(2)
+        expect(result.current.rows.map((r) => r.slug)).toEqual(["b"])
+    })
+
+    it("hides a deleted record at once and deletes it on the server when Undo runs out", async () => {
         const resource = fakeResource([{ id: 1, slug: "a" }, { id: 2, slug: "b" }])
         const { result } = await loaded(resource)
+        vi.useFakeTimers()
 
-        await act(() => result.current.remove(result.current.rows[0]))
+        act(() => result.current.remove(result.current.rows[0]))
+
+        expect(result.current.rows.map((r) => r.slug)).toEqual(["b"])
+        expect(resource.remove).not.toHaveBeenCalled()
+        expect(toast.show).toHaveBeenCalledWith("Blog deleted", expect.objectContaining({ undo: expect.any(Function) }))
+
+        act(() => vi.advanceTimersByTime(5000))
 
         expect(resource.remove).toHaveBeenCalledWith("a")
-        expect(result.current.rows.map((r) => r.slug)).toEqual(["b"])
+    })
+
+    it("puts a deleted record back in its place on Undo and never deletes it", async () => {
+        const resource = fakeResource([{ id: 1, slug: "a" }, { id: 2, slug: "b" }, { id: 3, slug: "c" }])
+        const { result } = await loaded(resource)
+        vi.useFakeTimers()
+
+        act(() => result.current.remove(result.current.rows[1]))
+        act(() => lastUndo()())
+        act(() => vi.advanceTimersByTime(5000))
+
+        expect(result.current.rows.map((r) => r.slug)).toEqual(["a", "b", "c"])
+        expect(resource.remove).not.toHaveBeenCalled()
+    })
+
+    it("sends a waiting delete straight away when the page is left", async () => {
+        const resource = fakeResource([{ id: 1, slug: "a" }])
+        const { result, unmount } = await loaded(resource)
+
+        act(() => result.current.remove(result.current.rows[0]))
+        unmount()
+
+        expect(resource.remove).toHaveBeenCalledWith("a")
+    })
+
+    it("brings a record back when the server refuses the delete", async () => {
+        const resource = { ...fakeResource([{ id: 1, slug: "a" }]), remove: vi.fn().mockRejectedValue(new Error("Server error")) }
+        const { result } = await loaded(resource)
+        vi.useFakeTimers()
+
+        act(() => result.current.remove(result.current.rows[0]))
+        await act(async () => { vi.advanceTimersByTime(5000) })
+
+        expect(result.current.rows.map((r) => r.slug)).toEqual(["a"])
+        expect(toast.error).toHaveBeenCalledWith("Could not delete: Server error")
+    })
+
+    it("applies a change at once and reverses it on Undo", async () => {
+        const { result } = await loaded(fakeResource([{ id: 1, slug: "a", status: "pending" }]))
+
+        await act(() => result.current.changeWithUndo({
+            run: async () => ({ id: 1, slug: "a", status: "approved" }),
+            undo: async () => ({ id: 1, slug: "a", status: "pending" }),
+            message: "Approved",
+        }))
+        expect(result.current.rows[0].status).toBe("approved")
+
+        await act(() => lastUndo()())
+        expect(result.current.rows[0].status).toBe("pending")
     })
 
     it("reports a failed load instead of showing an empty table silently", async () => {

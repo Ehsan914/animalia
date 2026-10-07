@@ -1,21 +1,27 @@
 import useEntityManager from "./useEntityManager"
 import EntityManagerPage from "./EntityManagerPage"
 import { faqs } from "../api/resources"
+import { nextOrder } from "./formRules"
 
 const COLUMNS = [
-    { key: "questionEn", label: "QUESTION (EN)" },
-    { key: "questionBn", label: "QUESTION (BN)" },
+    { label: "Question (EN)", key: "questionEn" },
+    {
+        label: "Question (BN)",
+        render: (faq) => (faq.questionBn
+            ? <span lang="bn">{faq.questionBn}</span>
+            : <span className="muted">Not written yet</span>),
+    },
 ]
 
 const FORM_FIELDS = [
-    { name: "questionEn", label: "Question (English)", type: "text",     required: true,  placeholder: "e.g., What services do you offer?" },
-    { name: "questionBn", label: "Question (Bengali)", type: "text",     required: true,  placeholder: "e.g., আপনারা কী কী সেবা প্রদান করেন?" },
-    { name: "answerEn",   label: "Answer (English)",   type: "textarea", required: true,  placeholder: "Write the answer in English..." },
-    { name: "answerBn",   label: "Answer (Bengali)",   type: "textarea", required: true,  placeholder: "বাংলায় উত্তর লিখুন..." },
-    { name: "order",      label: "Order",              type: "number",   required: true,  placeholder: "e.g., 1" },
+    { name: "questionEn", label: "Question (English)", required: true, max: 500 },
+    { name: "questionBn", label: "Question (Bengali)", required: true, max: 500, bn: true },
+    { name: "answerEn",   label: "Answer (English)",   type: "textarea", rows: 4, required: true },
+    { name: "answerBn",   label: "Answer (Bengali)",   type: "textarea", rows: 4, required: true, bn: true },
+    { name: "order",      label: "Order",              type: "number", min: 1, required: true, half: true, hint: "Position on the website." },
 ]
 
-const emptyForm = (rows) => ({ questionEn: "", questionBn: "", answerEn: "", answerBn: "", order: rows.length + 1 })
+const emptyForm = (rows) => ({ questionEn: "", questionBn: "", answerEn: "", answerBn: "", order: nextOrder(rows) })
 
 const toForm = ({ questionEn, questionBn, answerEn, answerBn, order }) =>
     ({ questionEn, questionBn, answerEn, answerBn, order })
@@ -26,11 +32,13 @@ const FAQsManager = () => {
     return (
         <EntityManagerPage
             title="FAQs"
-            subtitle="Manage frequently asked questions"
-            entityLabel="FAQ"
+            subtitle="Manage the common questions on the services page"
+            noun="FAQ"
+            nameOf={() => "this question"}
             manager={manager}
             columns={COLUMNS}
             fields={FORM_FIELDS}
+            rows={[...manager.rows].sort((a, b) => a.order - b.order)}
         />
     )
 }

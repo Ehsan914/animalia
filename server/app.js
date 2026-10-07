@@ -12,7 +12,7 @@ import clinicProfileRoutes from './routes/clinicProfileRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import bannerRoutes from './routes/bannerRoutes.js';
 import heroBannerRoutes from './routes/heroBannerRoutes.js';
-import { errorHandler } from './lib/http.js';
+import { errorHandler, originList } from './lib/http.js';
 
 for (const name of ['JWT_SECRET', 'TURNSTILE_SECRET_KEY']) {
     if (!process.env[name]) throw new Error(`${name} is not set`);
@@ -26,7 +26,7 @@ app.set('trust proxy', 1);
 
 //Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: originList(process.env.CLIENT_URL),
     credentials: true,
 }));
 app.use(express.json());

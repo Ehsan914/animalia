@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react"
-import { Heart, HeartOff, PixelPaw } from "../icons/pixel-icons"
-import { X } from "lucide-react"
+import { useEffect, useId, useRef, useState } from "react"
+import toast from "react-hot-toast"
+import Icon from "./Icon"
 import { reviews } from "../../api/resources"
-import toast from 'react-hot-toast'
-import Button from "./Button"
 import { useSpamCheck } from "./SpamCheck"
+import "../../styles/home.css"
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Rabbit", "Bird", "Other"]
+const SPECIES_ICON = { Dog: "dog", Cat: "cat" }
+const STARS = [1, 2, 3, 4, 5]
+const TEXT_MAX = 1000
 
 const initialForm = {
     author: "",
@@ -23,23 +25,27 @@ const initialErrors = {
     species: "",
     text: "",
     rating: "",
-    submit: "",
 }
 
+// "Leave a review": a native modal dialog (focus stays inside, Escape closes). The
+// review goes to the clinic for approval; Turnstile must pass before it can be sent.
 export function ReviewModal({ isOpen, onClose, onSuccess }) {
+    const dialogRef = useRef(null)
     const [formData, setFormData] = useState(initialForm)
     const [errors, setErrors] = useState(initialErrors)
     const [loading, setLoading] = useState(false)
     const spamCheck = useSpamCheck()
+    const id = useId()
 
-    // Trap scroll — legitimately syncing with an external system
+    // Open and close the dialog with the prop, and keep the page behind it still.
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = "hidden"
-        else document.body.style.overflow = ""
+        const dialog = dialogRef.current
+        if (!dialog) return
+        if (isOpen && !dialog.open) dialog.showModal()
+        if (!isOpen && dialog.open) dialog.close()
+        document.body.style.overflow = isOpen ? "hidden" : ""
         return () => { document.body.style.overflow = "" }
     }, [isOpen])
-
-    if (!isOpen) return null
 
     const handleClose = () => {
         setFormData(initialForm)
@@ -90,7 +96,8 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
         return valid
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault()
         if (!validate()) return
 
         setLoading(true)
@@ -104,7 +111,7 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
                 turnstileToken: spamCheck.token,
             })
             onSuccess?.()
-            toast.success("Review submitted successfully")
+            toast.success("Thank you. Your review will appear once the clinic approves it.")
             handleClose()
         } catch (err) {
             toast.error(err.message)
@@ -114,173 +121,142 @@ export function ReviewModal({ isOpen, onClose, onSuccess }) {
         }
     }
 
+    const field = (name) => ({
+        id: `${id}-${name}`,
+        "aria-invalid": errors[name] ? "true" : undefined,
+        "aria-describedby": errors[name] ? `${id}-${name}-error` : undefined,
+    })
+
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="review-modal-title"
+        <dialog
+            ref={dialogRef}
+            className="review-dialog"
+            aria-labelledby={`${id}-title`}
+            data-lenis-prevent=""
+            onCancel={(e) => { e.preventDefault(); handleClose() }}
+            onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
         >
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
-
-            {/* Modal Panel */}
-            <div className="relative w-full max-w-lg bg-white border-4 border-mc-primary flex flex-col max-h-[90vh]">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b-4 border-mc-primary bg-mc-grass">
-                    <div className="flex items-center gap-3">
-                        <PixelPaw className="w-6 h-6 text-white" />
-                        <h2
-                            id="review-modal-title"
-                            className="font-pixel text-sm text-white"
-                        >
-                            Leave a Review
-                        </h2>
+            {isOpen && (
+                <form onSubmit={handleSubmit} noValidate>
+                    <div className="rd-head">
+                        <h2 id={`${id}-title`}>Leave a review</h2>
+                        <button type="button" className="rd-close" onClick={handleClose} aria-label="Close">
+                            <Icon name="x" />
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleClose}
-                        className="w-8 h-8 flex items-center justify-center bg-white border-2 border-mc-primary text-mc-primary hover:bg-destructive hover:text-mc-heart hover:border-mc-heart transition-colors cursor-pointer"
-                        aria-label="Close modal"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
 
-                {/* Scrollable Body */}
-                <div className="overflow-y-auto p-6 flex flex-col gap-5">
+                    <div className="rd-body">
+                        <div className="rd-pair">
+                            <Field id={id} name="author" label="Your name" error={errors.author}>
+                                <input
+                                    type="text"
+                                    {...field("author")}
+                                    placeholder="e.g. Amanda Peterson"
+                                    value={formData.author}
+                                    onChange={e => onChange("author", e.target.value)}
+                                    maxLength={80}
+                                    autoComplete="name"
+                                />
+                            </Field>
+                            <Field id={id} name="pet_name" label="Pet's name" error={errors.pet_name}>
+                                <input
+                                    type="text"
+                                    {...field("pet_name")}
+                                    placeholder="e.g. Max"
+                                    value={formData.pet_name}
+                                    onChange={e => onChange("pet_name", e.target.value)}
+                                    maxLength={60}
+                                />
+                            </Field>
+                        </div>
 
-                    {/* Author */}
-                    <Field label="Your Name" required error={errors.author}>
-                        <input
-                            type="text"
-                            placeholder="e.g. Amanda Peterson"
-                            value={formData.author}
-                            onChange={e => onChange("author", e.target.value)}
-                            className={`border-2 px-2 py-2 w-full ${errors.author ? "border-mc-heart" : "border-mc-primary"}`}
-                            maxLength={80}
-                        />
-                    </Field>
-
-                    {/* Pet Name */}
-                    <Field label="Pet's Name" required error={errors.pet_name}>
-                        <input
-                            type="text"
-                            placeholder="e.g. Max"
-                            value={formData.pet_name}
-                            onChange={e => onChange("pet_name", e.target.value)}
-                            className={`border-2 px-2 py-2 w-full ${errors.pet_name ? "border-mc-heart" : "border-mc-primary"}`}
-                            maxLength={60}
-                        />
-                    </Field>
-
-                    {/* Species */}
-                    <Field label="Species" required error={errors.species}>
-                        <div className="flex flex-wrap gap-2">
-                            {SPECIES_OPTIONS.map(species => {
-                                const selected = formData.species === species
-                                return (
+                        <Field id={id} name="species" label="Species" error={errors.species} group>
+                            <div className="rd-chips" role="radiogroup" aria-labelledby={`${id}-species-label`}>
+                                {SPECIES_OPTIONS.map(species => (
                                     <button
                                         key={species}
                                         type="button"
+                                        role="radio"
+                                        aria-checked={formData.species === species}
+                                        className="rd-chip"
                                         onClick={() => onChange("species", species)}
-                                        className={`px-3 py-1.5 border-2 text-sm font-medium transition-colors cursor-pointer
-                                            ${selected
-                                                ? "bg-mc-primary border-mc-primary text-white"
-                                                : "bg-white border-mc-primary text-mc-primary hover:bg-mc-green-light"
-                                            }`}
                                     >
+                                        {SPECIES_ICON[species] && <Icon name={SPECIES_ICON[species]} />}
                                         {species}
                                     </button>
-                                )
-                            })}
-                        </div>
-                        {formData.species === "Other" && (
-                            <input
-                                type="text"
-                                placeholder="Please specify species..."
-                                value={formData.species_other}
-                                onChange={e => onChange("species_other", e.target.value)}
-                                className={`border-2 px-2 py-2 mt-2 w-full ${errors.species ? "border-mc-heart" : "border-mc-primary"}`}
-                                maxLength={60}
-                                autoFocus
+                                ))}
+                            </div>
+                            {formData.species === "Other" && (
+                                <input
+                                    type="text"
+                                    className="rd-other"
+                                    {...field("species")}
+                                    aria-label="Your pet's species"
+                                    placeholder="e.g. Hamster"
+                                    value={formData.species_other}
+                                    onChange={e => onChange("species_other", e.target.value)}
+                                    maxLength={60}
+                                    autoFocus
+                                />
+                            )}
+                        </Field>
+
+                        <Field id={id} name="rating" label="Rating" error={errors.rating} group>
+                            <div className="rd-stars" role="radiogroup" aria-labelledby={`${id}-rating-label`}>
+                                {STARS.map(n => (
+                                    <button
+                                        key={n}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={formData.rating === n}
+                                        aria-label={`${n} out of 5`}
+                                        className={n <= formData.rating ? "is-on" : ""}
+                                        onClick={() => onChange("rating", n)}
+                                    >
+                                        <Icon name="star" />
+                                    </button>
+                                ))}
+                            </div>
+                        </Field>
+
+                        <Field id={id} name="text" label="Your review" error={errors.text}>
+                            <textarea
+                                {...field("text")}
+                                placeholder="Tell us about your visit"
+                                value={formData.text}
+                                onChange={e => onChange("text", e.target.value)}
+                                rows={4}
+                                maxLength={TEXT_MAX}
                             />
-                        )}
-                    </Field>
+                            <p className="rd-count">{formData.text.length}/{TEXT_MAX}</p>
+                        </Field>
 
-                    {/* Rating */}
-                    <Field label="Rating" required error={errors.rating}>
-                        <div className="flex gap-1.5">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => onChange("rating", i)}
-                                    className="cursor-pointer hover:scale-110 transition-transform"
-                                    aria-label={`Rate ${i}`}
-                                >
-                                    {i <= (formData.rating || 0)
-                                        ? <Heart className="w-6 h-6 text-mc-heart" />
-                                        : <HeartOff className="w-6 h-6 text-muted-foreground" />
-                                    }
-                                </button>
-                            ))}
-                        </div>
-                    </Field>
+                        {spamCheck.widget}
+                    </div>
 
-                    {/* Review Text */}
-                    <Field label="Your Review" required error={errors.text}>
-                        <textarea
-                            placeholder="Tell us about your experience..."
-                            value={formData.text}
-                            onChange={e => onChange("text", e.target.value)}
-                            className={`border-2 px-2 py-2 resize-none w-full ${errors.text ? "border-mc-heart" : "border-mc-primary"}`}
-                            rows={4}
-                            maxLength={1000}
-                        />
-                        <p className="text-xs text-muted-foreground text-right mt-1">
-                            {formData.text.length}/1000
-                        </p>
-                    </Field>
-
-                    {spamCheck.widget}
-
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 pb-6 flex justify-between">
-                    <Button
-                        onClick={handleClose}
-                        disabled={loading}
-                        className="px-5 py-2.5 border-2 text-black font-pixel text-[10px] bg-white hover:text-mc-heart hover:border-mc-heart hover:shadow-mc-emergency transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={loading || !spamCheck.token}
-                        className="px-5 py-2.5 border-2 text-white font-pixel text-[10px] transition-opacity disabled:opacity-50 cursor-pointer"
-                    >
-                        {loading ? "Submitting..." : "Submit Review"}
-                    </Button>
-                </div>
-            </div>
-        </div>
+                    <div className="rd-foot">
+                        <button className="btn" type="submit" disabled={loading || !spamCheck.token}>
+                            {loading ? "Sending…" : "Send review"}
+                        </button>
+                    </div>
+                </form>
+            )}
+        </dialog>
     )
 }
 
-function Field({ label, required, error, children }) {
+// A labelled field with its error line. Groups (chips, stars) are labelled by id
+// instead of a <label for>.
+function Field({ id, name, label, error, group = false, children }) {
     return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-foreground">
-                {label}
-                {required && <span className="text-mc-heart ml-1">*</span>}
-            </label>
-            {children}
-            {error && (
-                <p className="text-xs text-mc-heart">{error}</p>
+        <div className="rd-field">
+            {group ? (
+                <span className="rd-label" id={`${id}-${name}-label`}>{label}</span>
+            ) : (
+                <label className="rd-label" htmlFor={`${id}-${name}`}>{label}</label>
             )}
+            {children}
+            {error && <p className="rd-error" id={`${id}-${name}-error`}>{error}</p>}
         </div>
     )
 }

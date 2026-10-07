@@ -1,28 +1,23 @@
 import { useState } from "react";
-import { login as requestToken } from "../api/resources";
+import { ApiError, login as requestToken } from "../api/resources";
 
 const useAuth = () => {
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
+    // Resolves to null when signed in, or to the ApiError that stopped it
+    // (status 401: wrong email or password; none: the server was unreachable).
     const login = async (email, password) => {
         setLoading(true);
-        setError(null);
 
         try {
             const { token } = await requestToken({ email, password });
-
-            if (!token) {
-                setError('Login failed: No token received');
-                return false;
-            }
+            if (!token) return new ApiError("Sign-in failed: the server sent no token.");
 
             localStorage.setItem('adminToken', token);
-            return true;
+            return null;
         } catch (err) {
-            setError(err.message);
-            return false;
+            return err;
         } finally {
             setLoading(false);
         }
@@ -38,7 +33,7 @@ const useAuth = () => {
         return !!token;
     };
     return {
-        login, logout, isAuthenticated, loading, error
+        login, logout, isAuthenticated, loading
     }
 }
 export default useAuth;

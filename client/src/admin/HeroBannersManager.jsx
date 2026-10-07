@@ -1,72 +1,132 @@
+import Icon from "../components/ui/Icon"
+import HeroBannerWindow from "../components/banner/HeroBannerWindow"
+import { bannerStatus, bannerWhen, discount, displaySeconds } from "../components/banner/heroBanner"
 import useEntityManager from "./useEntityManager"
-import EntityManagerPage from "./EntityManagerPage"
+import PageHead from "./PageHead"
+import Chip from "./Chip"
+import EntityEditor from "./EntityEditor"
+import HeroBannerPreview from "./HeroBannerPreview"
+import { confirm } from "./feedback"
 import { heroBanners } from "../api/resources"
+import {
+    BANNER_FIELDS, BANNER_STATUS, bannerPayload, bannerToForm, checkBanner, emptyBanner,
+} from "./heroBannerForm"
 
-// The server anchors calendar days to the clinic's timezone, so read them back
-// in that timezone; slicing the UTC string would show the start a day early.
-const CLINIC_TIME_ZONE = "Asia/Dhaka"
-const clinicDay = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: CLINIC_TIME_ZONE })
-const displayDay = (iso) =>
-    new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: CLINIC_TIME_ZONE })
+// Live banners first, then switched off, then ended; earliest start first within each.
+const STATUS_ORDER = { live: 0, off: 1, ended: 2 }
+const byStatus = (a, b) =>
+    STATUS_ORDER[bannerStatus(a)] - STATUS_ORDER[bannerStatus(b)] || new Date(a.startDate) - new Date(b.startDate)
 
-const LIVE_OPTIONS = [
-    { value: true,  label: "Live" },
-    { value: false, label: "Hidden" },
-]
+// One banner as a card: the banner as a phone shows it, its dates, and an on/off switch.
+function BannerCard({ banner, onEdit, onToggle }) {
+    const status = BANNER_STATUS[bannerStatus(banner)]
+    const pct = discount(banner)
+    return (
+        <article className="banner-card">
+            <div className="banner-thumb" onClick={onEdit}>
+                <div className="preview-frame" inert>
+                    <HeroBannerWindow banners={[banner]} />
+                </div>
+            </div>
+            <div className="banner-meta">
+                <div className="banner-line">
+                    <Chip tone={status.tone}>{status.label}</Chip>
+                    {pct > 0 && <Chip tone="sale">{pct}% off</Chip>}
+                    <span className="muted">{bannerWhen(banner)} · {displaySeconds(banner)}s</span>
+                </div>
+                <h3>{banner.title}</h3>
+                <footer>
+                    <label className="switch switch--sm">
+                        <input type="checkbox" checked={banner.active} onChange={onToggle} />
+                        <span className="switch-track" aria-hidden="true" />
+                        <span>On the website</span>
+                    </label>
+                    <span className="drawer-spacer" />
+                    <button className="btn btn--sm btn--quiet" type="button" onClick={onEdit} aria-label={`Edit ${banner.title}`}>
+                        <Icon name="pencil-simple" />Edit
+                    </button>
+                </footer>
+            </div>
+        </article>
+    )
+}
 
-const COLUMNS = [
-    { key: "title",  label: "TITLE", truncate: true },
-    { key: "dates",  label: "DATE RANGE", render: (row) => `${displayDay(row.startDate)} – ${displayDay(row.endDate)}` },
-    { key: "active", label: "STATUS", align: "center", render: (row) => (row.active ? "● Live" : "Hidden") },
-]
-
-const FORM_FIELDS = [
-    { name: "title",        label: "Title",                       type: "text",     required: true, placeholder: "e.g., Free Vaccination Campaign" },
-    { name: "description",  label: "Description",                 type: "textarea", required: true, placeholder: "Short 2–3 line description of the campaign." },
-    { name: "location",     label: "Location",                    type: "text",     placeholder: "e.g., Animalia Vet Care, Mirpur, Dhaka" },
-    { name: "mapUrl",       label: "Map Link (optional)",         type: "url",      placeholder: "e.g., https://maps.google.com/?q=..." },
-    { name: "imageUrl",     label: "Photo (Google Drive share link)", type: "url",  required: true, placeholder: "https://drive.google.com/file/d/FILE_ID/view?usp=sharing" },
-    { name: "partnerLogos", label: "Partner Logos (one Google Drive link per line)", type: "textarea", placeholder: "https://drive.google.com/file/d/FILE_ID_1/view\nhttps://drive.google.com/file/d/FILE_ID_2/view" },
-    { name: "startDate",    label: "Start Date",                  type: "date",     required: true },
-    { name: "endDate",      label: "End Date",                    type: "date",     required: true },
-    { name: "startTime",    label: "Start Time (optional)",       type: "time" },
-    { name: "endTime",      label: "End Time (optional)",         type: "time" },
-    { name: "active",       label: "Show on site",                type: "options", options: LIVE_OPTIONS },
-]
-
-const emptyForm = () => ({
-    title: "", description: "", location: "", mapUrl: "", imageUrl: "", partnerLogos: "",
-    startDate: "", endDate: "", startTime: "", endTime: "", active: true,
-})
-
-const toForm = (banner) => ({
-    title:        banner.title,
-    description:  banner.description,
-    location:     banner.location,
-    mapUrl:       banner.mapUrl,
-    imageUrl:     banner.imageUrl,
-    // One link per line in the textarea; the server splits it again.
-    partnerLogos: banner.partnerLogos.join("\n"),
-    startDate:    clinicDay(banner.startDate),
-    endDate:      clinicDay(banner.endDate),
-    startTime:    banner.startTime,
-    endTime:      banner.endTime,
-    active:       banner.active,
-})
-
+// Hero Banners keep their own design: a card grid and a wide editor with a live
+// preview. Several banners can be live at once; the home page rotates them.
 const HeroBannersManager = () => {
-    // Saving a live banner hides the previous one on the server, so refetch.
-    const manager = useEntityManager({ resource: heroBanners, label: "Hero banner", emptyForm, toForm, reloadAfterSave: true })
+    const manager = useEntityManager({
+        resource: heroBanners,
+        label: "Banner",
+        emptyForm: emptyBanner,
+        toForm: bannerToForm,
+        toPayload: bannerPayload,
+    })
+    const { modal } = manager
+    const list = [...manager.rows].sort(byStatus)
+
+    const toggle = (banner) => {
+        const save = (active) => heroBanners.update(banner.id, bannerPayload({ ...bannerToForm(banner), active }))
+        manager.changeWithUndo({
+            run: () => save(!banner.active),
+            undo: () => save(banner.active),
+            message: banner.active ? `“${banner.title}” is switched off` : `“${banner.title}” is on the website`,
+        })
+    }
+
+    const askDelete = async () => {
+        const banner = manager.rows.find((b) => b.id === modal.key)
+        const ok = await confirm({
+            title: "Delete this banner?",
+            text: `“${banner.title}” is removed from the website and from this list.`,
+        })
+        if (!ok) return
+        manager.closeModal()
+        manager.remove(banner)
+    }
 
     return (
-        <EntityManagerPage
-            title="Hero Banners"
-            subtitle="Promo slides shown in the homepage hero (one live at a time, shown until its end date)"
-            entityLabel="Hero Banner"
-            manager={manager}
-            columns={COLUMNS}
-            fields={FORM_FIELDS}
-        />
+        <>
+            <PageHead
+                title="Hero Banners"
+                subtitle="The window beside the headline on the home page. Live banners take turns"
+                addLabel="New banner"
+                onAdd={manager.openAdd}
+            />
+
+            {list.length ? (
+                <div className="banner-grid">
+                    {list.map((banner) => (
+                        <BannerCard
+                            key={banner.id}
+                            banner={banner}
+                            onEdit={() => manager.openEdit(banner)}
+                            onToggle={() => toggle(banner)}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div className="empty">
+                    <Icon name="image-square" />
+                    <h3>{manager.loading ? "Loading…" : "No banners yet"}</h3>
+                    {!manager.loading && <p>Without a banner, the home page shows the clinic card.</p>}
+                </div>
+            )}
+
+            {modal && (
+                <EntityEditor
+                    title={modal.mode === "add" ? "New banner" : "Edit banner"}
+                    saveLabel={modal.mode === "add" ? "Create banner" : "Save"}
+                    fields={BANNER_FIELDS}
+                    values={modal.form}
+                    onChange={manager.changeField}
+                    check={checkBanner}
+                    onSubmit={manager.submit}
+                    onClose={manager.closeModal}
+                    onDelete={modal.mode === "edit" ? askDelete : undefined}
+                    preview={<HeroBannerPreview banner={modal.form} />}
+                />
+            )}
+        </>
     )
 }
 

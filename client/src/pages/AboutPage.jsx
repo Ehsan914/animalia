@@ -1,239 +1,167 @@
-/* eslint-disable no-unused-vars */
-import { Stethoscope } from "lucide-react"
-import { Heart, PixelPaw, PixelMedical, PixelStethoscope, HeartWhite } from "../components/icons/pixel-icons"
-import { Link } from "react-router"
-import Button from "../components/ui/Button"
+import { Link } from "react-router-dom"
+import Icon from "../components/ui/Icon"
+import PageHead from "../components/pages/PageHead"
+import CtaCard from "../components/pages/CtaCard"
+import useReveal from "../components/pages/useReveal"
+import { vetAnchor } from "../components/pages/vetAnchor"
 import { getGDriveUrl } from "../utils/gdrive"
-import Reveal from "../components/ui/Reveal"
-import { metadata } from "../components/metadata/aboutmetadata"
+import { localPhone, telHref } from "../utils/clinicProfile"
+import { useClinicProfile, useSiteData } from "../context/SiteDataContext"
 import { PageSEO } from "../components/SEO"
+import "../styles/pages.css"
 
-const values = [
-  {
-    icon: HeartWhite,
-    title: "Compassion",
-    description: "We treat every pet as if they were our own, with love and gentle care.",
-  },
-  {
-    icon: Stethoscope,
-    title: "Care",
-    description: "We provide attentive, personalized care to ensure every pet feels safe, comfortable, and loved.",
-  },
-  {
-    icon: PixelMedical,
-    title: "Commitment",
-    description: "Building lasting relationships with pet parents through transparency and integrity.",
-  },
-]
+// "Beside Shewrapara Metro Station" → "beside Shewrapara Metro Station", to sit mid-sentence.
+const midSentence = (text) => text.charAt(0).toLowerCase() + text.slice(1)
 
-const reasons = [
-  "Experienced team of certified veterinarians",
-  "State-of-the-art medical equipment",
-  "24/7 emergency services available",
-  "Affordable and transparent pricing",
-  "Comfortable, stress-free environment for pets",
-  "Personalized care plans for each patient",
-]
+const FounderCard = ({ vet, index }) => (
+    <article className="founder" data-reveal style={{ "--i": index }}>
+        <figure className="photo founder-photo">
+            <img src={getGDriveUrl(vet.img_url)} alt={vet.name} loading="lazy" />
+        </figure>
+        <div className="founder-body">
+            <h3>{vet.name}</h3>
+            <p className="founder-role">{vet.designation}</p>
+            <ul className="creds">
+                <li><Icon name="graduation-cap" />{vet.degree}</li>
+                <li><Icon name="certificate" />{vet.experience}+ years in clinical practice</li>
+                {vet.specialities?.length > 0 && (
+                    <li><Icon name="stethoscope" />{vet.specialities.map((s) => s.name).join(", ")}</li>
+                )}
+            </ul>
+            <Link className="text-link" to={`/vets#${vetAnchor(vet)}`}>
+                Full profile <Icon name="arrow-right" className="icon-arrow" />
+            </Link>
+        </div>
+    </article>
+)
 
-const img_url = "https://drive.google.com/file/d/1BZmfJJvVVqKQ9yXmYlfUVgwXmkC8uzR9/view?usp=drive_link"
+const CareCards = ({ profile }) => (
+    <ul className="care-cards">
+        <li data-reveal>
+            <span className="care-icon"><Icon name="hand-heart" /></span>
+            <h3>Gentle hands</h3>
+            <p>We treat every pet as if they were our own, with patience and a calm approach, so they feel safe while they are with us.</p>
+        </li>
+        <li data-reveal style={{ "--i": 1 }}>
+            <span className="care-icon"><Icon name="chats-circle" /></span>
+            <h3>Clear answers</h3>
+            <p>We explain what we find and the treatment plan before we start, and take the time to answer your questions.</p>
+        </li>
+        <li data-reveal style={{ "--i": 2 }}>
+            <span className="care-icon"><Icon name="calendar-check" /></span>
+            <h3>Follow-up care</h3>
+            <p>After treatment or surgery we check on your pet&apos;s recovery and set the next visit, so nothing is left to memory.</p>
+        </li>
+        <li data-reveal style={{ "--i": 3 }}>
+            <span className="care-icon care-icon--alert"><Icon name="siren" /></span>
+            <h3>Help at any hour</h3>
+            {profile ? (
+                <p>
+                    {profile.emergency24h ? "The emergency line answers 24/7. " : ""}
+                    Call <a href={telHref(profile.emergencyPhone)}>{localPhone(profile.emergencyPhone)}</a> before you set off and we will be ready.
+                </p>
+            ) : (
+                <p>Call the emergency line before you set off and we will be ready.</p>
+            )}
+        </li>
+    </ul>
+)
 
 const AboutPage = () => {
-  return (
-    <div className="min-h-screen">
-      <PageSEO page="about" />
-      {/* Hero Section */}
-      <section className="bg-mc-green-light py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6">
-              <PixelPaw className="w-4 h-4 text-mc-grass" />
-              <span className="text-sm font-medium">About Us</span>
-            </div>
-            <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-foreground mb-6">
-              Caring for Pets Since 2024
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              At Animalia Vet Care, we believe every pet deserves the best possible care. 
-              Our dedicated team combines expertise with compassion to ensure your furry family members 
-              live happy, healthy lives.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+    const { vets } = useSiteData()
+    const profile = useClinicProfile()
+    useReveal(vets.length)
 
-      {/* Clinic Story */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Image placeholder - pixel art style */}
-            <Reveal as="div" className="aspect-square bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-4">
-              <div className="w-full h-full bg-mc-green-light relative overflow-hidden">
-                <img
-                  src={getGDriveUrl(img_url)}
-                  alt="about_pic"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
-            </Reveal>
+    const where = profile?.landmark ? ` ${midSentence(profile.landmark)}` : " in Mirpur"
+    const founders = vets.map((vet) => vet.name).join(" and ")
 
-            {/* Content */}
-            <Reveal as="div" delay={120}>
-              <h2 className="font-pixel text-lg sm:text-xl text-foreground mb-6">
-                Our Story
-              </h2>
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Founded in 2024, Animalia Vet Care started with a simple mission: 
-                  to provide compassionate, high-quality veterinary care that every pet deserves. 
-                  What began as a small clinic has grown into a trusted healthcare destination for 
-                  thousands of pets in our community.
-                </p>
-                <p>
-                  Our founder, Dr. Md. Easin, established this clinic with the belief that 
-                  veterinary care should be accessible, affordable, and delivered with genuine 
-                  compassion. Today, our team of experienced veterinarians continues to uphold 
-                  these values every day.
-                </p>
-                <p>
-                  We've treated over 900 pets and counting, from routine check-ups to 
-                  complex surgeries. Our minimal clinic setup reflects 
-                  our belief that visiting the vet should be a positive experience for both 
-                  pets and their families.
-                </p>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
+    return (
+        <>
+            <PageSEO page="about" />
+            <PageHead
+                title={["Opened in 2024,", "right here in Mirpur."]}
+                lede={`A clinic${where}, founded by ${founders || "two vets"}, where clinical expertise and genuine compassion go hand in hand.`}
+            />
 
-      {/* Mission & Vision */}
-      <section className="py-16 md:py-24 bg-mc-creeper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Mission */}
-            <Reveal as="div" className="bg-white border-4 border-mc-primary shadow-mc-sharp p-8">
-              <h3 className="font-pixel text-sm sm:text-base text-black mb-4">
-                Our Mission
-              </h3>
-              <p className="text-black">
-                To provide exceptional veterinary care through compassion, expertise, and 
-                innovation, ensuring every pet lives their healthiest, happiest life while 
-                building lasting relationships with the families who love them.
-              </p>
-            </Reveal>
-
-            {/* Vision */}
-            <Reveal as="div" delay={120} className="bg-mc-grass border-4 border-mc-primary shadow-mc-sharp p-8">
-              <h3 className="font-pixel text-sm sm:text-base text-white mb-4">
-                Our Vision
-              </h3>
-              <p className="text-white/90">
-                To be the most trusted and caring veterinary clinic in our community, 
-                recognized for our commitment to excellence, innovative treatments, and 
-                the genuine bonds we form with pets and their families.
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* Values */}
-      <section className="py-16 md:py-24 bg-mc-green-light">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="text-center mb-12">
-            <h2 className="font-pixel text-lg sm:text-xl text-black mb-4">
-              Our Values
-            </h2>
-            <p className="text-black max-w-2xl mx-auto">
-              These core values guide everything we do at Animalia Vet Care.
-            </p>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {values.map((value, index) => (
-              <Reveal as="div" key={value.title} delay={index * 80} className="bg-white border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <div className="w-12 h-12 bg-mc-grass mx-auto flex items-center justify-center mb-4">
-                  <value.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="font-pixel text-[10px] text-black mb-2">
-                  {value.title}
-                </h3>
-                <p className="text-sm text-black">
-                  {value.description}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-16 md:py-24 bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <Reveal as="div">
-              <h2 className="font-pixel text-lg sm:text-xl text-foreground mb-6">
-                Why Choose Us?
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                We understand that choosing a veterinary clinic is an important decision. 
-                Here's why pet parents trust us with their beloved companions:
-              </p>
-              <ul className="space-y-4">
-                {reasons.map((reason, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-mc-grass flex items-center justify-center shrink-0 mt-0.5">
-                      <PixelPaw className="w-4 h-4 text-white" />
+            <section className="section">
+                <div className="wrap split split--center">
+                    <figure className="photo about-photo" data-reveal>
+                        <img
+                            src="/images/about-vets.jpg"
+                            width="1050"
+                            height="1400"
+                            alt="Dr. Md. Easin and Dr. Nafisa Noor standing back to back in white coats"
+                        />
+                    </figure>
+                    <div className="prose" data-reveal style={{ "--i": 1 }}>
+                        <h2 className="h2">Our story</h2>
+                        <p>Founded in 2024, Animalia Vet Care started with a simple mission: to provide compassionate, high-quality veterinary care that every pet deserves. What began as a small clinic has grown into a trusted healthcare destination for thousands of pets in our community.</p>
+                        <p>Our founders, Dr. Md. Easin and Dr. Nafisa Noor, established this clinic with the belief that veterinary care should be accessible, affordable, and delivered with genuine compassion. Today, our team of experienced veterinarians continues to uphold these values every day.</p>
+                        <p>We&apos;ve treated over 900 pets and counting, from routine check-ups to complex surgeries. Our minimal clinic setup reflects our belief that visiting the vet should be a positive experience for both pets and their families.</p>
+                        <ul className="story-facts">
+                            <li><span className="fact-icon"><Icon name="calendar-check" /></span><span><b>Since 2024</b>Open every day</span></li>
+                            <li><span className="fact-icon"><Icon name="dog" /></span><span><b>900+ pets</b>And counting</span></li>
+                            <li><span className="fact-icon"><Icon name="map-pin" /></span><span><b>Mirpur</b>By the metro</span></li>
+                        </ul>
                     </div>
-                    <span className="text-foreground">{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
+                </div>
+            </section>
 
-            {/* Stats */}
-            <Reveal as="div" delay={120} className="grid grid-cols-2 gap-6">
-              <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <div className="font-pixel text-2xl sm:text-3xl text-mc-grass mb-2">6+</div>
-                <p className="text-sm text-muted-foreground">Years of Experience</p>
-              </div>
-              <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <div className="font-pixel text-2xl sm:text-3xl text-mc-grass mb-2">900+</div>
-                <p className="text-sm text-muted-foreground">Pets Treated</p>
-              </div>
-              <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <div className="font-pixel text-2xl sm:text-3xl text-mc-grass mb-2">2</div>
-                <p className="text-sm text-muted-foreground">Expert Veterinarians</p>
-              </div>
-              <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-6 text-center">
-                <div className="font-pixel text-2xl sm:text-3xl text-mc-grass mb-2">24/7</div>
-                <p className="text-sm text-muted-foreground">Emergency Care</p>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
+            <section className="section section--navy on-navy">
+                <div className="wrap">
+                    <article className="mv-row" data-reveal>
+                        <p className="mv-label"><span className="mv-icon"><Icon name="heartbeat" /></span>Our mission</p>
+                        <p className="mv-text">To give every pet excellent care, with compassion and skill, so they live their <span>healthiest, happiest life</span>, and to build lasting relationships with the families who love them.</p>
+                    </article>
+                    <article className="mv-row" data-reveal>
+                        <p className="mv-label"><span className="mv-icon"><Icon name="compass" /></span>Our vision</p>
+                        <p className="mv-text">To be the most trusted, caring vet clinic in our community, known for <span>good medicine</span> and for the bonds we build with pets and their families.</p>
+                    </article>
+                </div>
+            </section>
 
-      {/* CTA */}
-      <section className="py-16 bg-mc-grass">
-        <Reveal as="div" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-pixel text-lg sm:text-xl text-white mb-4">
-            Ready to Visit Us?
-          </h2>
-          <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Book an appointment today and experience the difference compassionate care makes.
-          </p>
-          <Link
-            to="/appointment"
-          >
-            <Button variant="outline" className="bg-white">
-            Book Appointment
-            </Button>
-          </Link>
-        </Reveal>
-      </section>
-    </div>
-  )
+            <section className="section">
+                <div className="wrap">
+                    <div className="section-head" data-reveal>
+                        <h2 className="h2">How we look after your pet</h2>
+                        <p className="muted">Compassion, care and commitment, in the things you notice at every visit.</p>
+                    </div>
+                    <CareCards profile={profile} />
+                </div>
+            </section>
+
+            {vets.length > 0 && (
+                <section className="section section--mist">
+                    <div className="wrap">
+                        <div className="section-head" data-reveal>
+                            <h2 className="h2">The vets behind Animalia</h2>
+                            {vets.length === 2 && (
+                                <p className="muted">Both graduated from Sher-e-Bangla Agricultural University, trained in Thailand, and are registered with the Bangladesh Veterinary Council.</p>
+                            )}
+                        </div>
+                        <div className="founders">
+                            {vets.map((vet, i) => <FounderCard key={vet.id} vet={vet} index={i} />)}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            <CtaCard
+                title="Come and see us."
+                text={profile
+                    ? `Open every day, ${profile.opensAt} – ${profile.closesAt},${where}.`
+                    : "Open every day in Mirpur."}
+                photo="/images/checkup.jpg"
+                photoAlt="Dr. Md. Easin holding a kitten in the clinic"
+                photoPosition="50% 25%"
+            >
+                <Link className="btn btn--paper" to="/appointment">
+                    Book a visit <Icon name="arrow-right" className="icon-arrow" />
+                </Link>
+                <Link className="text-link" to="/contact">Find the clinic</Link>
+            </CtaCard>
+        </>
+    )
 }
 
-export default AboutPage;
+export default AboutPage

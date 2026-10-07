@@ -1,77 +1,79 @@
-import { useState } from "react";
-import Button from "../components/ui/Button";
-import useAuth from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import toast from 'react-hot-toast';
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import Icon from "../components/ui/Icon"
+import useAuth from "../hooks/useAuth"
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const LoginPage = () => {
-    
-    const [ email, setEmail ] = useState("");
-    const [ password, setPassword ] = useState("");
-    const { login, loading } = useAuth();
-    const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate();
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
+    const [error, setError] = useState("")
+    const { login, loading } = useAuth()
+    const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const success = await login(email, password);
-
-        if (success) {
-            toast.success("Login successful");
-            navigate('/admin/dashboard');
+        e.preventDefault()
+        if (!EMAIL.test(email) || !password) {
+            setError("Add your email and password.")
+            return
         }
-        else toast.error("Invalid Credentials");
-    };
-    
+        setError("")
+        const failure = await login(email, password)
+        if (!failure) navigate("/admin/dashboard")
+        else if (failure.status === 401) setError("That email and password don't match. Check them and try again.")
+        else setError(failure.message)
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="max-w-150 w-[90%] sm:w-full px-5 sm:px-0 mx-auto my-10 bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp">
-                <form onSubmit={handleSubmit} className="flex flex-col px-7 md:px-13.5 pt-12.5 pb-9 gap-5 sm:gap-7.5">
-                    <h1 className="text-3xl sm:text-4xl font-pixel-alt text-black/90">Welcome to Animalia Admin Panel</h1>
-
-                    {/* Email */}
-                    <div className="flex flex-col gap-2.5">
-                        <label className="text-[15px] font-sans font-semibold text-black">Email</label>
-                        <input 
-                            type="email" 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@example.com"
-                            className="border-4 border-mc-primary shadow-mc-sharp bg-white px-3 py-3 text-sm font-sans font-medium"
+        <main className="login">
+            <form className="login-card" onSubmit={handleSubmit} noValidate>
+                <img src="/logo.svg" alt="Animalia Vet Care" width="170" height="48" className="login-logo" />
+                <h1>Sign in to the admin panel</h1>
+                <div className="field">
+                    <label htmlFor="login-email">Email</label>
+                    <input
+                        id="login-email"
+                        type="email"
+                        autoComplete="username"
+                        required
+                        value={email}
+                        aria-invalid={error ? true : undefined}
+                        aria-describedby="login-error"
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                </div>
+                <div className="field">
+                    <label htmlFor="login-password">Password</label>
+                    <div className="field-row">
+                        <input
+                            id="login-password"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            required
+                            value={password}
+                            aria-invalid={error ? true : undefined}
+                            aria-describedby="login-error"
+                            onChange={(e) => setPassword(e.target.value)}
                         />
+                        <button
+                            className="icon-btn"
+                            type="button"
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                            onClick={() => setShowPassword((shown) => !shown)}
+                        >
+                            <Icon name={showPassword ? "eye-slash" : "eye"} />
+                        </button>
                     </div>
-
-                    {/* Password */}
-                    <div className="flex flex-col gap-2.5">
-                        <label className="text-[15px] font-sans font-semibold text-black">Password</label>
-                        <div className="relative">
-                            <input 
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => {setPassword(e.target.value)}} 
-                                placeholder="••••••••••••"
-                                className="w-full border-4 border-mc-primary shadow-mc-sharp bg-white px-3 py-3 text-sm font-sans font-medium"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword((prev) => !prev)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black"
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
-                    </div>
-
-                    <Button disabled={loading} className="font-pixel-alt text-xl sm:text-2xl font-medium py-2">
-                        {
-                            loading ? "Signing in..." : "Sign in"
-                        }
-                    </Button>
-                </form>
-            </div>
-        </div>
+                </div>
+                <p className="field-error" id="login-error" role="alert">{error}</p>
+                <button className="btn" type="submit" disabled={loading}>
+                    {loading ? "Signing in…" : "Sign in"}
+                </button>
+            </form>
+        </main>
     )
 }
+
 export default LoginPage

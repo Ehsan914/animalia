@@ -1,14 +1,24 @@
-import { Clock4 } from 'lucide-react';
-import LiveDate from '../components/ui/LiveDate'
+import Icon from "../components/ui/Icon"
+import LiveDate from "../components/ui/LiveDate"
 
-const AdminTopbar = () => {
+// The clock bar across the top. Phones get the menu button that opens the sidebar.
+export default function AdminTopbar({ menuOpen, onMenu }) {
     return (
-        <div className="sticky top-0 z-50 px-7.5 py-6.25 border-4 border-l-0 border-mc-primary bg-mc-green-light ">
-            <div className='flex items-center gap-2'>
-                <Clock4 size={20}/>
-                <LiveDate />
-            </div>
-        </div>
+        <header className="topbar">
+            <button
+                className="icon-btn menu-btn"
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={menuOpen}
+                aria-controls="admin-side"
+                onClick={onMenu}
+            >
+                <Icon name="list" />
+            </button>
+            <p className="clock"><Icon name="clock" /><LiveDate /></p>
+            <a className="view-site" href="/" target="_blank" rel="noopener">
+                <Icon name="arrow-square-out" /><span>View website</span>
+            </a>
+        </header>
     )
 }
-export default AdminTopbar

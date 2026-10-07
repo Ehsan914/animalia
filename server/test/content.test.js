@@ -59,16 +59,105 @@ describe("hero banners", () => {
         expect(body.message).toBe("endDate: must be on or after the start date");
     });
 
+    it("accepts a banner without a photo, drawn from its colour and headline", async () => {
+        const { body } = await adminApi.post("/api/hero-banners", heroInput({ imageUrl: undefined })).expect(201);
+        expect(body.imageUrl).toBe("");
+    });
+
     it("hides a banner once it has ended", async () => {
         await adminApi.post("/api/hero-banners", heroInput({ startDate: "2020-01-01", endDate: "2020-01-02" })).expect(201);
         const { body } = await publicApi.get("/api/hero-banners").expect(200);
-        expect(body).toBeNull();
+        expect(body).toEqual([]);
     });
 
-    it("shows the live banner that has not ended", async () => {
-        await adminApi.post("/api/hero-banners", heroInput()).expect(201);
-        const { body } = await publicApi.get("/api/hero-banners").expect(200);
-        expect(body.title).toBe("Free Rabies Vaccination");
+    it("lists every live banner, earliest start first, skipping inactive and ended ones", async () => {
+        await adminApi.post("/api/hero-banners", heroInput({ title: "December", startDate: "2099-12-01", endDate: "2099-12-05" })).expect(201);
+        await adminApi.post("/api/hero-banners", heroInput({ title: "November A" })).expect(201);
+        await adminApi.post("/api/hero-banners", heroInput({ title: "November B" })).expect(201);
+        await adminApi.post("/api/hero-banners", heroInput({ title: "Draft", startDate: "2099-01-01", active: false })).expect(201);
+        await adminApi.post("/api/hero-banners", heroInput({ title: "Ended", startDate: "2020-01-01", endDate: "2020-01-02" })).expect(201);
+
+        const res = await publicApi.get("/api/hero-banners").expect(200);
+
+        expect(res.headers["cache-control"]).toBe("public, max-age=60");
+        expect(res.body.map((b) => b.title)).toEqual(["November A", "November B", "December"]);
+    });
+
+    it("keeps several banners live at once", async () => {
+        const { body: first } = await adminApi.post("/api/hero-banners", heroInput({ title: "First" })).expect(201);
+        await adminApi.post("/api/hero-banners", heroInput({ title: "Second" })).expect(201);
+        await adminApi.put(`/api/hero-banners/${first.id}`, heroInput({ title: "First" })).expect(200);
+
+        const { body: all } = await adminApi.get("/api/hero-banners/admin").expect(200);
+
+        expect(all.filter((b) => b.active).map((b) => b.title).sort()).toEqual(["First", "Second"]);
+    });
+
+    it("defaults the display fields when they are left out", async () => {
+        const { body } = await adminApi.post("/api/hero-banners", heroInput()).expect(201);
+
+        expect(body).toMatchObject({ bgColor: "", ctaLabel: "", ctaUrl: "", displaySeconds: 6, discountPercent: null });
+    });
+
+    it("round-trips the display fields to the public list", async () => {
+        const display = {
+            bgColor: "#1A2b3c",
+            ctaLabel: "Book now",
+            ctaUrl: "https://animalia.example/book",
+            displaySeconds: 12,
+            discountPercent: 30,
+        };
+        const { body: created } = await adminApi.post("/api/hero-banners", heroInput(display)).expect(201);
+        const { body: [live] } = await publicApi.get("/api/hero-banners").expect(200);
+
+        expect(created).toMatchObject(display);
+        expect(live).toMatchObject({ ...display, title: "Free Rabies Vaccination", imageUrl: heroInput().imageUrl });
+        expect(live).not.toHaveProperty("createdAt");
+    });
+
+    it.each([
+        "tel:+8801533829537",
+        "mailto:animaliavetcare25@gmail.com",
+        "http://example.com",
+        "/services",
+        "",
+    ])("accepts the call-to-action link %j", async (ctaUrl) => {
+        const { body } = await adminApi.post("/api/hero-banners", heroInput({ ctaUrl })).expect(201);
+        expect(body.ctaUrl).toBe(ctaUrl);
+    });
+
+    it("clears the discount with null", async () => {
+        const { body } = await adminApi.post("/api/hero-banners", heroInput({ discountPercent: 20 })).expect(201);
+        const { body: updated } = await adminApi.put(`/api/hero-banners/${body.id}`, heroInput({ discountPercent: null })).expect(200);
+        expect(updated.discountPercent).toBeNull();
+    });
+
+    it.each([
+        ["bgColor", "red"],
+        ["bgColor", "#12345"],
+        ["bgColor", "#12345g"],
+        ["displaySeconds", 2],
+        ["displaySeconds", 31],
+        ["displaySeconds", 6.5],
+        ["discountPercent", 0],
+        ["discountPercent", 100],
+        ["ctaUrl", "javascript:alert(1)"],
+        ["ctaUrl", "JavaScript:alert(1)"],
+        ["ctaUrl", "data:text/html,hi"],
+        ["ctaUrl", "//evil.example"],
+        ["ctaUrl", "/\\evil.example"],
+        ["ctaUrl", "ftp://example.com"],
+    ])("rejects %s = %j", async (field, value) => {
+        const { body } = await adminApi.post("/api/hero-banners", heroInput({ [field]: value })).expect(400);
+        expect(body.message).toMatch(new RegExp(`^${field}: `));
+    });
+
+    it("rejects an overlong call-to-action label or link", async () => {
+        const longLabel = await adminApi.post("/api/hero-banners", heroInput({ ctaLabel: "a".repeat(61) })).expect(400);
+        const longUrl = await adminApi.post("/api/hero-banners", heroInput({ ctaUrl: `https://example.com/${"a".repeat(2000)}` })).expect(400);
+
+        expect(longLabel.body.message).toMatch(/^ctaLabel: /);
+        expect(longUrl.body.message).toMatch(/^ctaUrl: /);
     });
 });
 

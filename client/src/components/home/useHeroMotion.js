@@ -1,0 +1,116 @@
+import { useLayoutEffect } from "react"
+import { gsap, ScrollTrigger, REDUCED_MOTION, motionAllowed, navHeight } from "./motion"
+
+const CAPTION_MIN = 420 // px of navy kept beside the photo for the caption
+const CAPTION_MAX = 440
+const PIN_DESK = 1.4 // pinned for this many screens of scroll
+const PIN_MOB = 0.9
+
+// First entrance: the headline lines rise from their masks, then the row, the
+// banner window and the photo.
+function entrance() {
+    gsap.timeline({ defaults: { ease: "expo.out" } })
+        .from(".hero-title .line > span", { yPercent: 110, duration: 0.9, stagger: 0.08 })
+        .from(".hero-main > :not(.hero-title)", { y: 14, opacity: 0, duration: 0.6, stagger: 0.06 }, 0.16)
+        .from(".hero-window", { y: 28, opacity: 0, duration: 0.9 }, 0.22)
+        .from(".vets-photo img", { opacity: 0, yPercent: 4, duration: 0.9 }, 0.26)
+}
+
+// Where the photo starts and ends, for the screen as it is now. Desktop keeps the
+// whole photo in frame beside the caption, which starts at the logo; phones run
+// the photo full width with the caption under it.
+function measure(stage, desk) {
+    const copy = stage.querySelector(".hero-copy")
+    const caption = stage.querySelector(".stage-caption")
+    const img = stage.querySelector(".vets-photo img")
+    // Width / height of whichever photo the browser picked (portrait on phones, wide on desktop).
+    const ratio = (img.naturalWidth / img.naturalHeight) || (img.width / img.height)
+    const areaW = stage.clientWidth
+    const areaH = stage.clientHeight - navHeight()
+    const geo = {}
+
+    if (desk) {
+        const edge = document.querySelector(".nav-logo")?.getBoundingClientRect().left ?? 0
+        const inner = areaW - 2 * edge
+        geo.w = Math.min(areaH * ratio, inner - CAPTION_MIN)
+        geo.h = geo.w / ratio
+        geo.endX = areaW / 2 - edge - geo.w / 2
+        geo.endY = (areaH - geo.h) / 2
+        geo.s0 = Math.min(0.8, (areaW * 0.76) / geo.w)
+        stage.style.setProperty("--cap-left", `${edge}px`)
+        stage.style.setProperty("--cap-w", `${Math.min(CAPTION_MAX, inner - geo.w - 48)}px`)
+    } else {
+        geo.w = areaW
+        geo.h = geo.w / ratio
+        geo.endX = 0
+        geo.endY = 0
+        geo.s0 = 0.86
+    }
+    geo.startY = copy.offsetTop + copy.offsetHeight - navHeight()
+    stage.style.setProperty("--pw", `${geo.w}px`)
+    stage.style.setProperty("--ph", `${geo.h}px`)
+    if (!desk) stage.style.setProperty("--stage-h", `${navHeight() + geo.h + caption.offsetHeight}px`)
+    return geo
+}
+
+// Hero depth: the stage pins, the vets photo rises over the copy (which fades out)
+// and grows into the "Meet the vets" scene, then the caption and name tags arrive.
+function pinStage(stage, desk) {
+    stage.classList.add("is-pinned")
+    const photo = stage.querySelector(".vets-photo")
+    let geo = measure(stage, desk)
+    const remeasure = () => { geo = measure(stage, desk) }
+    ScrollTrigger.addEventListener("refreshInit", remeasure)
+
+    gsap.timeline({
+        scrollTrigger: {
+            trigger: stage,
+            start: "top top",
+            end: () => `+=${window.innerHeight * (desk ? PIN_DESK : PIN_MOB)}`,
+            pin: true,
+            scrub: true,
+            invalidateOnRefresh: true,
+        },
+    })
+        .fromTo(photo,
+            { x: 0, y: () => geo.startY, scale: () => geo.s0, borderRadius: () => 28 / geo.s0 },
+            { x: () => geo.endX, y: () => geo.endY, scale: 1, borderRadius: () => (desk ? 22 : 0), ease: "power1.inOut", duration: 0.7 }, 0)
+        .to(".hero-title", { scale: 0.88, opacity: 0, ease: "none", duration: 0.6 }, 0)
+        // The copy the photo rises over leaves completely, before the photo passes it.
+        .to(".hero-main > :not(.hero-title), .hero-window", { opacity: 0, ease: "none", duration: 0.24 }, 0.1)
+        .fromTo("[data-reveal-late]", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1, stagger: 0.04, ease: "power2.out" }, 0.74)
+        .to({}, { duration: 0.1 })
+
+    return () => {
+        ScrollTrigger.removeEventListener("refreshInit", remeasure)
+        stage.classList.remove("is-pinned")
+        ;["--cap-left", "--cap-w", "--stage-h", "--pw", "--ph"].forEach((p) => stage.style.removeProperty(p))
+    }
+}
+
+// All hero motion, reverted on unmount. Reduced motion (or the prerender) keeps
+// the static flow: copy, then the photo, then the caption.
+export default function useHeroMotion(stageRef) {
+    useLayoutEffect(() => {
+        const stage = stageRef.current
+        if (!stage || !motionAllowed()) return
+
+        const ctx = gsap.context(entrance, stage)
+        const mm = gsap.matchMedia(stage)
+        mm.add(
+            { desk: "(min-width: 900px)", mob: "(max-width: 899px)", reduce: REDUCED_MOTION },
+            ({ conditions }) => (conditions.reduce ? undefined : pinStage(stage, conditions.desk)),
+        )
+
+        // The photo's real ratio is known once it loads (and again when the picture swaps source).
+        const img = stage.querySelector(".vets-photo img")
+        const refresh = () => ScrollTrigger.refresh()
+        img.addEventListener("load", refresh)
+
+        return () => {
+            img.removeEventListener("load", refresh)
+            mm.revert()
+            ctx.revert()
+        }
+    }, [stageRef])
+}

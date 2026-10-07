@@ -13,78 +13,84 @@ datasource db {
 }
 
 model Admin {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  passwordHash  String
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+
   @@map("admins")
 }
 
 model Vet {
-  id            Int      @id @default(autoincrement())
-  name          String
-  degree        String
-  designation   String
-  short_bio     String   @default("")
-  bio           String   @db.Text
-  fun_fact      String
-  img_url       String
-  experience    Int
-  order         Int
-  specialities  Speciality[]
+  id           Int          @id @default(autoincrement())
+  name         String
+  degree       String
+  designation  String
+  short_bio    String       @default("")
+  bio          String       @db.Text
+  fun_fact     String
+  img_url      String
+  experience   Int
+  order        Int
+  specialities Speciality[]
+
   @@map("vets")
 }
 
 model Speciality {
-  id            Int     @id @default(autoincrement())
-  name          String  @unique
-  vets          Vet[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  vets Vet[]
+
   @@map("specialities")
 }
 
 model Service {
-  id            Int      @id @default(autoincrement())
-  title         String
-  short_desc    String   @default("")
-  description   String   @db.Text
-  price         Float
-  order         Int
-  img_url       String
-  icon_key      String   @default("stethoscope")
-  features      String[]
-  appointments  AppointmentService[]
+  id           Int                  @id @default(autoincrement())
+  title        String
+  short_desc   String               @default("")
+  description  String               @db.Text
+  price        Float
+  order        Int
+  img_url      String
+  icon_key     String               @default("stethoscope")
+  features     String[]
+  appointments AppointmentService[]
+
   @@map("services")
 }
 
 model Blog {
-  id            Int      @id @default(autoincrement())
-  slug          String   @unique
-  
+  id   Int    @id @default(autoincrement())
+  slug String @unique
+
   // Bengali
-  titleBn       String
-  contentBn     String   @db.Text
-  categoryBn    String
-  
+  titleBn    String
+  contentBn  String @db.Text
+  categoryBn String
+
   // English
-  titleEn       String
-  contentEn     String   @db.Text
-  categoryEn    String
-  
-  author        String
-  published     Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  titleEn    String
+  contentEn  String @db.Text
+  categoryEn String
+
+  author    String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+
   @@map("blogs")
 }
 
 model Review {
-  id            Int      @id @default(autoincrement())
-  author        String
-  pet_name      String
-  species       String
-  text          String   @db.Text
-  rating        Int
-  published     Boolean  @default(false)  // only ever true while status is approved
-  status        ModerationStatus @default(pending)
-  createdAt     DateTime @default(now())
+  id        Int              @id @default(autoincrement())
+  author    String
+  pet_name  String
+  species   String
+  text      String           @db.Text
+  rating    Int
+  published Boolean          @default(false) // only ever true while status is approved
+  status    ModerationStatus @default(pending)
+  createdAt DateTime         @default(now())
+
   @@map("reviews")
 }
 
@@ -95,79 +101,89 @@ enum ModerationStatus {
 }
 
 model Faq {
-  id            Int      @id @default(autoincrement())
-  questionBn    String
-  answerBn      String   @db.Text
-  questionEn    String
-  answerEn      String   @db.Text
-  order         Int
+  id         Int    @id @default(autoincrement())
+  questionBn String
+  answerBn   String @db.Text
+  questionEn String
+  answerEn   String @db.Text
+  order      Int
+
   @@map("faqs")
 }
 
 // The clinic's contact details, address and hours. Exactly one row (id = 1,
 // enforced by a CHECK constraint); every public page reads it.
 model ClinicProfile {
-  id              Int      @id @default(1)
-  phone           String   // E.164, e.g. +8801533829537
-  email           String
-  emergencyPhone  String   // E.164
-  emergency24h    Boolean  @default(true)
-  whatsappNumber  String   // E.164
-  streetAddress   String
-  locality        String
-  postalCode      String
-  landmark        String   @default("")
-  directionsUrl   String
-  mapEmbedUrl     String
-  opensAt         String   // "HH:MM", clinic local time, every day
-  closesAt        String   // "HH:MM"
-  facebookUrl     String   @default("")
-  updatedAt       DateTime @updatedAt
+  id             Int      @id @default(1)
+  phone          String // E.164, e.g. +8801533829537
+  email          String
+  emergencyPhone String // E.164
+  emergency24h   Boolean  @default(true)
+  whatsappNumber String // E.164
+  streetAddress  String
+  locality       String
+  postalCode     String
+  landmark       String   @default("")
+  directionsUrl  String
+  mapEmbedUrl    String
+  opensAt        String // "HH:MM", clinic local time, every day
+  closesAt       String // "HH:MM"
+  facebookUrl    String   @default("")
+  updatedAt      DateTime @updatedAt
+
   @@map("clinic_profile")
 }
 
 model Banner {
-  id            Int      @id @default(autoincrement())
-  message       String
-  type          String   @default("promo")   // info | promo | emergency
-  ctaLabel      String   @default("")
-  ctaUrl        String   @default("")
-  active        Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  message   String
+  type      String   @default("promo") // info | promo | emergency
+  ctaLabel  String   @default("")
+  ctaUrl    String   @default("")
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
   @@map("banners")
 }
 
 // Rich promotional slide shown inside the homepage hero carousel.
 model HeroBanner {
-  id            Int      @id @default(autoincrement())
-  title         String
-  description   String   @db.Text
-  location      String   @default("")
-  mapUrl        String   @default("")
-  imageUrl      String
-  partnerLogos  String[]
-  startDate     DateTime
-  endDate       DateTime
-  startTime     String   @default("")
-  endTime       String   @default("")
-  active        Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String   @db.Text
+  location        String   @default("")
+  mapUrl          String   @default("")
+  imageUrl        String
+  partnerLogos    String[]
+  startDate       DateTime
+  endDate         DateTime
+  startTime       String   @default("")
+  endTime         String   @default("")
+  bgColor         String   @default("")
+  ctaLabel        String   @default("")
+  ctaUrl          String   @default("")
+  displaySeconds  Int      @default(6)
+  discountPercent Int?
+  active          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
   @@map("hero_banners")
 }
 
 model Appointment {
-  id            Int      @id @default(autoincrement())
-  name          String
-  phone         String
-  email         String
-  pet_name      String
-  species       String
-  services      AppointmentService[]
-  date          DateTime
-  message       String   @db.Text
-  status        ModerationStatus @default(pending)
-  vetComment    String   @db.Text
-  createdAt     DateTime @default(now())
+  id         Int                  @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String
+  pet_name   String
+  species    String
+  services   AppointmentService[]
+  date       DateTime
+  message    String               @db.Text
+  status     ModerationStatus     @default(pending)
+  vetComment String               @db.Text
+  createdAt  DateTime             @default(now())
+
   @@map("appointments")
 }
 

@@ -1,127 +1,97 @@
-import { Link } from "react-router"
-import { PixelPaw, PixelHeart } from "../components/icons/pixel-icons"
+import { Link } from "react-router-dom"
+import Icon from "../components/ui/Icon"
+import PageHead from "../components/pages/PageHead"
+import CtaCard from "../components/pages/CtaCard"
+import useReveal from "../components/pages/useReveal"
+import useHashScroll from "../components/pages/useHashScroll"
+import { vetAnchor } from "../components/pages/vetAnchor"
 import { getGDriveUrl } from "../utils/gdrive"
-import Button from "../components/ui/Button"
-import Reveal from "../components/ui/Reveal"
-import { useSiteData } from "../context/SiteDataContext"
+import { localPhone, telHref } from "../utils/clinicProfile"
+import { useClinicProfile, useSiteData } from "../context/SiteDataContext"
 import { PageSEO } from "../components/SEO"
+import "../styles/pages.css"
+
+const LEDE_TWO = "Two veterinary consultants and surgeons, both graduates of Sher-e-Bangla Agricultural University with clinical training in Thailand."
+const LEDE_ANY = "The veterinary consultants and surgeons who look after your pets, from first vaccines to surgery."
+
+const VetProfile = ({ vet }) => (
+    <article className="vet" id={vetAnchor(vet)}>
+        <figure className="photo" data-reveal>
+            <img src={getGDriveUrl(vet.img_url)} alt={`Portrait of ${vet.name}`} />
+        </figure>
+        <div data-reveal style={{ "--i": 1 }}>
+            <h2 className="vet-name">{vet.name}</h2>
+            <p className="vet-role">{vet.designation}</p>
+            {vet.specialities?.length > 0 && (
+                <ul className="tags" aria-label="Specialities">
+                    {vet.specialities.map((s) => <li key={s.id}>{s.name}</li>)}
+                </ul>
+            )}
+            <p className="vet-bio">{vet.bio}</p>
+            <dl className="facts">
+                <div><dt>Degree</dt><dd>{vet.degree}</dd></div>
+                <div><dt>Experience</dt><dd>{vet.experience}+ years</dd></div>
+            </dl>
+            {vet.fun_fact && (
+                <p className="fun-fact">
+                    <Icon name="heart" />
+                    <span><b>Beyond the clinic</b> {vet.fun_fact}</span>
+                </p>
+            )}
+            <Link className="btn" to="/appointment">
+                Book a visit <Icon name="arrow-right" className="icon-arrow" />
+            </Link>
+        </div>
+    </article>
+)
 
 const VetsPage = () => {
-  const { vets } = useSiteData()
+    const { vets } = useSiteData()
+    const profile = useClinicProfile()
+    useHashScroll()
+    useReveal(vets.length)
 
-  return (
-    <div className="min-h-screen">
-      <PageSEO page="vets" />
-      {/* Hero Section */}
-      <section className="bg-mc-green-light py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-mc-primary shadow-mc-flat mb-6">
-              <PixelHeart className="w-4 h-4 text-mc-grass" />
-              <span className="text-sm font-medium">Our Team</span>
-            </div>
-            <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-black mb-6">
-              Meet Our Veterinarians
-            </h1>
-            <p className="text-lg text-black">
-              Our team of experienced and caring veterinarians is dedicated to providing 
-              the best possible care for your beloved pets. Get to know the professionals 
-              who will be looking after your furry family members.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+    return (
+        <>
+            <PageSEO page="vets" />
+            <PageHead title="Our vets" lede={vets.length === 2 ? LEDE_TWO : LEDE_ANY} />
 
-      {/* Vets List */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-16">
-            {vets.map((vet, index) => (
-                  <Reveal
-                    as="div"
-                    key={vet.name}
-                    delay={index * 110}
-                    className={`grid grid-cols-1 lg:grid-cols-3 gap-8 ${
-                      index % 2 === 1 ? "lg:flex-row-reverse" : ""
-                    }`}
-                  >
-                    {/* Pixel Avatar Card */}
-                    <div className={`${index % 2 === 1 ? "lg:order-2" : ""}`}>
-                      <div className="bg-mc-creeper border-4 border-mc-primary shadow-mc-sharp p-6 flex flex-col items-center">
-                        <div className="w-60 h-60 bg-mc-green-light border-2 border-mc-primary shadow-mc-flat mb-6 relative overflow-hidden">
-                          <img
-                            src={getGDriveUrl(vet.img_url)}
-                            alt={vet.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <h3 className="font-pixel text-xs text-foreground text-center mb-1">
-                          {vet.name}
-                        </h3>
-                        <p className="text-sm text-black font-medium text-center mb-4">
-                          {vet.designation}
-                        </p>
-                        <div className="text-xs text-black text-center font-bold px-4 py-2 bg-mc-green-light">
-                          {vet.experience}+ Years Experience
-                        </div>
-                      </div>
-                    </div>
+            <section className="section">
+                <div className="wrap">
+                    {vets.map((vet) => <VetProfile key={vet.id} vet={vet} />)}
+                </div>
+            </section>
 
-                    {/* Content */}
-                    <div className={`lg:col-span-2 ${index % 2 === 1 ? "lg:order-1" : ""}`}>
-                      <div className="mb-4">
-                        <h2 className="font-pixel text-base sm:text-lg text-foreground mb-2">
-                          {vet.name}
-                        </h2>
-                        <p className="text-sm text-muted-foreground">{vet.degree}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {vet.specialities?.map((specialty) => (
-                          <span
-                            key={specialty.id}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-mc-green-light text-xs text-foreground"
-                          >
-                            <PixelPaw className="w-3 h-3 text-mc-grass" />
-                            {specialty.name}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-[18px] text-black mb-6 leading-relaxed">{vet.bio}</p>
-                      <div className="bg-mc-green-light border-2 border-mc-primary shadow-mc-flat p-4 flex items-start gap-3">
-                        <PixelHeart className="w-5 h-5 text-mc-heart shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-[14px] font-bold text-black mb-1">Fun Fact</p>
-                          <p className="text-sm text-black">{vet.fun_fact}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="lg:col-span-3 mt-6 mb-7 border-t-4 border-dashed border-mc-grass" />
-                  </Reveal>
-                ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-mc-grass">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-pixel text-lg sm:text-xl text-white mb-4">
-            Ready to Meet Us?
-          </h2>
-          <p className="text-white/90 mb-8 max-w-2xl mx-auto">
-            Schedule an appointment and experience the care and expertise our team provides.
-          </p>
-          <Link to="/appointment">
-            <Button variant="outline" className="bg-white">
-              Book Appointment
-            </Button>
-          </Link>
-        </div>
-      </section>
-    </div>
-  )
+            {profile ? (
+                <CtaCard
+                    title="Pet emergency?"
+                    text={profile.emergency24h
+                        ? "The emergency line answers 24/7. Call before you set off."
+                        : "Call the emergency line before you set off."}
+                    photo="/images/grooming.jpg"
+                    photoAlt="Dr. Nafisa Noor with a golden retriever outdoors"
+                    photoPosition="50% 35%"
+                >
+                    <a className="btn btn--paper" href={telHref(profile.emergencyPhone)}>
+                        <Icon name="phone" />Call {localPhone(profile.emergencyPhone)}
+                    </a>
+                    <Link className="text-link" to="/appointment">Or book a visit</Link>
+                </CtaCard>
+            ) : (
+                <CtaCard
+                    title="Come and meet us."
+                    text="Book a visit and see the vets in person."
+                    photo="/images/grooming.jpg"
+                    photoAlt="Dr. Nafisa Noor with a golden retriever outdoors"
+                    photoPosition="50% 35%"
+                >
+                    <Link className="btn btn--paper" to="/appointment">
+                        Book a visit <Icon name="arrow-right" className="icon-arrow" />
+                    </Link>
+                </CtaCard>
+            )}
+        </>
+    )
 }
 
 export default VetsPage
