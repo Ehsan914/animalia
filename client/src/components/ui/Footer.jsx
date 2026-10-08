@@ -70,7 +70,7 @@ export default function Footer() {
                                 <li className="footer-emergency">
                                     <span className="dot dot--alert" />
                                     <a href={telHref(profile.emergencyPhone)}>
-                                        {profile.emergency24h ? "Emergency 24/7" : "Emergency"} · {localPhone(profile.emergencyPhone)}
+                                        {profile.emergency24h ? "Emergency 24/7" : "Emergency"} · <span className="nowrap">{localPhone(profile.emergencyPhone)}</span>
                                     </a>
                                 </li>
                             </ul>

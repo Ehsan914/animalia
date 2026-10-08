@@ -43,6 +43,10 @@ export default function ServicesSheet({ services }) {
                         </li>
                     ))}
                 </ol>
+                {/* Phones only (home.css): the way on to the full services page. */}
+                <Link className="btn services-all" to="/services">
+                    View all services <Icon name="arrow-right" className="icon-arrow" />
+                </Link>
             </div>
         </section>
     )

@@ -58,6 +58,9 @@
   transform-origin: 0 0;
 }
 
+/* Phones break "for every / companion." onto two lines; wider screens keep it on one. */
+.hero-title-br { display: none; }
+
 .hero-intro {
   margin: clamp(18px, 2.6vh, 28px) 0 0;
   max-width: 36ch;
@@ -94,6 +97,9 @@
   &:hover .icon { border-color: #fff; background: rgba(255, 255, 255, 0.08); }
 }
 
+/* Phones only; the desktop status row already carries the emergency line. */
+.hero-emergency { display: none; }
+
 /* Banner window: drawn by banner.css; the hero only sets how tall it stands. */
 @media (min-width: 900px) {
   .hero .hero-window { min-height: clamp(380px, 58vh, 560px); }
@@ -102,23 +108,36 @@
 @media (max-width: 899px) {
   .hero-copy {
     grid-template-columns: minmax(0, 1fr);
-    gap: 26px;
-    padding-top: 22px;
-    padding-bottom: 28px;
+    gap: 0;
+    padding-top: 40px;
+    padding-bottom: 40px;
   }
-  .hero-status { gap: 6px 18px; margin-bottom: 14px; font-size: 14px; }
+  /* The emergency line moves under the banner (.hero-emergency); the floating call button covers the rest. */
+  .hero-status { display: none; }
   .hero-title { font-size: clamp(38px, 11.2vw, 56px); }
-  .hero-intro { margin-top: 14px; font-size: 17px; }
+  .hero-title-br { display: inline; }
+  .hero-intro { margin-top: 22px; font-size: 17px; line-height: 1.65; }
 
   /* Thumb row: the booking button takes the width, the front desk is a round call button. */
-  .hero-actions { flex-wrap: nowrap; gap: 12px; margin-top: 22px; }
+  .hero-actions { flex-wrap: nowrap; gap: 14px; margin-top: 36px; }
   .hero-actions .btn { flex: 1; }
   .hero-call {
     flex: none;
     & .icon { width: 52px; height: 52px; padding: 14px; }
     & span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   }
-  .hero .hero-window { border-radius: 22px; }
+  .hero .hero-window { margin-top: 44px; border-radius: 22px; }
+  .hero-emergency {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+  }
 }
 
 /* Photo: static flow by default (no JS / reduced motion) */
@@ -297,6 +316,9 @@
 /* Scoped: pages.css has its own, tighter .section-title for the other pages. */
 .services .section-title { margin-bottom: clamp(32px, 4.5vw, 56px); }
 
+/* "View all services" shows on phones only. */
+.services-all { display: none; }
+
 .sheet {
   list-style: none;
   margin: 0;
@@ -358,6 +380,7 @@
   .sheet { grid-template-columns: 1fr; }
   .sheet li:nth-child(2) .sheet-row::before { height: 1px; opacity: 0.22; }
   .sheet-row { grid-template-columns: 24px minmax(0, 1fr) 20px; gap: 12px; padding: 20px 0 22px; }
+  .services-all { display: flex; margin-top: 32px; }
 }
 
 /* ================= CARE PLANNER: health card ================= */

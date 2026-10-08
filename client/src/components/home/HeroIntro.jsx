@@ -28,7 +28,7 @@ export default function HeroIntro({ profile }) {
             )}
             <h1 className="display hero-title" id="hero-title">
                 <span className="line"><span>Gentle care</span></span>
-                <span className="line"><span>for every companion.</span></span>
+                <span className="line"><span>for every <br className="hero-title-br" />companion.</span></span>
             </h1>
             <p className="hero-intro">
                 Veterinary care for dogs, cats and small pets, from routine check-ups and vaccinations

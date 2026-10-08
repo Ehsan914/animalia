@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { Link, NavLink, useLocation } from "react-router-dom"
-import Icon from "./Icon"
 import { useClinicProfile } from "../../context/SiteDataContext"
 import { localPhone, telHref } from "../../utils/clinicProfile"
 
@@ -13,8 +12,7 @@ const NAV = [
     { to: "/contact", label: "Contact" },
 ]
 
-// Fixed navy header. On phones the links move into a sheet and the emergency line
-// becomes a one-tap call button.
+// Fixed navy header. On phones the links and the emergency line move into a sheet.
 export default function Navbar() {
     const profile = useClinicProfile()
     const { pathname } = useLocation()
@@ -60,16 +58,10 @@ export default function Navbar() {
                 </ul>
                 <div className="nav-actions">
                     {emergency && (
-                        <>
-                            <a className="nav-sos" href={emergency.href} aria-label={`Call the emergency line, ${emergency.number}`}>
-                                <Icon name="phone" />
-                                <span className="dot dot--alert" />
-                            </a>
-                            <a className="nav-emergency" href={emergency.href} aria-label={`${emergency.label}, call ${emergency.number}`}>
-                                <span className="dot dot--alert" />
-                                <span>{emergency.label}</span>
-                            </a>
-                        </>
+                        <a className="nav-emergency" href={emergency.href} aria-label={`${emergency.label}, call ${emergency.number}`}>
+                            <span className="dot dot--alert" />
+                            <span>{emergency.label}</span>
+                        </a>
                     )}
                     {pathname !== "/appointment" && (
                         <Link className="btn btn--paper" to="/appointment">Book a visit</Link>
@@ -94,7 +86,7 @@ export default function Navbar() {
             ))}
             {emergency && (
                 <a href={emergency.href}>
-                    {emergency.label} · {emergency.number} <span aria-hidden="true">→</span>
+                    <span>{emergency.label} · <span className="nowrap">{emergency.number}</span></span> <span aria-hidden="true">→</span>
                 </a>
             )}
             </nav>
