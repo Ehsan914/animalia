@@ -4,7 +4,18 @@ import { gsap, ScrollTrigger, REDUCED_MOTION, motionAllowed, navHeight } from ".
 const CAPTION_MIN = 420 // px of navy kept beside the photo for the caption
 const CAPTION_MAX = 440
 const PIN_DESK = 1.4 // pinned for this many screens of scroll
-const PIN_MOB = 0.9
+const PHOTO_DUR = 0.7 // timeline time the photo spends rising
+const SCRUB_MOB = 0.6 // seconds the phone animation takes to catch up with the finger
+// Phones finish the transition on their own once a swipe stops inside it: on to the
+// vets scene going down, back to the hero going up.
+const SNAP_MOB = {
+    snapTo: [0, 1],
+    directional: true,
+    inertia: false,
+    delay: 0.05,
+    duration: { min: 0.5, max: 0.9 },
+    ease: "power2.inOut",
+}
 
 // First entrance: the headline lines rise from their masks, then the row, the
 // banner window and the photo.
@@ -12,7 +23,7 @@ function entrance() {
     gsap.timeline({ defaults: { ease: "expo.out" } })
         .from(".hero-title .line > span", { yPercent: 110, duration: 0.9, stagger: 0.08 })
         .from(".hero-main > :not(.hero-title)", { y: 14, opacity: 0, duration: 0.6, stagger: 0.06 }, 0.16)
-        .from(".hero-window", { y: 28, opacity: 0, duration: 0.9 }, 0.22)
+        .from(".hero-window, .hero-emergency", { y: 28, opacity: 0, duration: 0.9 }, 0.22)
         .from(".vets-photo img", { opacity: 0, yPercent: 4, duration: 0.9 }, 0.26)
 }
 
@@ -62,24 +73,29 @@ function pinStage(stage, desk) {
     const remeasure = () => { geo = measure(stage, desk) }
     ScrollTrigger.addEventListener("refreshInit", remeasure)
 
-    gsap.timeline({
-        scrollTrigger: {
-            trigger: stage,
-            start: "top top",
-            end: () => `+=${window.innerHeight * (desk ? PIN_DESK : PIN_MOB)}`,
-            pin: true,
-            scrub: true,
-            invalidateOnRefresh: true,
-        },
-    })
+    const tl = gsap.timeline()
         .fromTo(photo,
             { x: 0, y: () => geo.startY, scale: () => geo.s0, borderRadius: () => 28 / geo.s0 },
-            { x: () => geo.endX, y: () => geo.endY, scale: 1, borderRadius: () => (desk ? 22 : 0), ease: "power1.inOut", duration: 0.7 }, 0)
+            { x: () => geo.endX, y: () => geo.endY, scale: 1, borderRadius: () => (desk ? 22 : 0), ease: desk ? "power1.inOut" : "none", duration: PHOTO_DUR }, 0)
         .to(".hero-title", { scale: 0.88, opacity: 0, ease: "none", duration: 0.6 }, 0)
         // The copy the photo rises over leaves completely, before the photo passes it.
-        .to(".hero-main > :not(.hero-title), .hero-window", { opacity: 0, ease: "none", duration: 0.24 }, 0.1)
+        .to(".hero-main > :not(.hero-title), .hero-window, .hero-emergency", { opacity: 0, ease: "none", duration: 0.24 }, 0.1)
         .fromTo("[data-reveal-late]", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.1, stagger: 0.04, ease: "power2.out" }, 0.74)
         .to({}, { duration: 0.1 })
+
+    // Phones: the photo rises the full height of the copy, so the pin lasts just long
+    // enough for it to move at the finger's own speed, never racing ahead of it.
+    ScrollTrigger.create({
+        animation: tl,
+        trigger: stage,
+        start: "top top",
+        end: () => `+=${desk ? window.innerHeight * PIN_DESK : (geo.startY * tl.duration()) / PHOTO_DUR}`,
+        pin: true,
+        scrub: desk ? true : SCRUB_MOB,
+        snap: desk ? undefined : SNAP_MOB,
+        anticipatePin: desk ? 0 : 1,
+        invalidateOnRefresh: true,
+    })
 
     return () => {
         ScrollTrigger.removeEventListener("refreshInit", remeasure)

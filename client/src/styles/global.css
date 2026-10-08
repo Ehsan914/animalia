@@ -30,7 +30,7 @@
 }
 
 @media (max-width: 899px) {
-  :root { --nav-h: 64px; }
+  :root { --nav-h: 64px; --gutter: clamp(20px, 6vw, 32px); }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -395,6 +395,7 @@ button { font: inherit; color: inherit; }
 @media (max-width: 899px) {
   .footer .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer .footer-brand { grid-column: 1 / -1; }
+  .footer .footer-base { flex-direction: column; align-items: center; gap: 10px; text-align: center; }
 }
 
 /* ---------- Clinic stamp ---------- */
@@ -476,26 +477,6 @@ button { font: inherit; color: inherit; }
   &.no-anim { transition: none; }
 }
 
-
-/* ---------- Mobile one-tap emergency call ---------- */
-
-.nav-sos {
-  display: none;
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border: 1.5px solid rgba(169, 187, 221, 0.4);
-  border-radius: 50%;
-  place-items: center;
-  color: #fff;
-
-  & .icon { width: 20px; height: 20px; }
-  & .dot { position: absolute; top: 4px; right: 4px; }
-}
-
-@media (max-width: 899px) {
-  .nav-sos { display: grid; }
-}
 
 /* ---------- Thin scrollbar, site-wide ---------- */
 
