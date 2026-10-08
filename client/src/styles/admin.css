@@ -56,7 +56,8 @@
     margin-bottom: 10px;
     border-bottom: 1px solid rgba(169, 187, 221, 0.2);
     & img { display: block; width: 140px; height: auto; }
-    & span { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sky); }
+    & .side-label { display: block; overflow: visible; }
+    & .side-label text { font: 600 12px var(--font-body); fill: var(--sky); }
   }
 
   .side-nav {

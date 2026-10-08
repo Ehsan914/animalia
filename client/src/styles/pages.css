@@ -579,6 +579,8 @@
   .posts li:first-child .post-card { padding: 26px 24px 24px; }
   .article-aside { position: static; }
   .form-pair { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  /* (React) Phones: the send button takes the card's full width. */
+  .message-card form > .btn { width: 100%; }
 }
 
 .fun-fact {

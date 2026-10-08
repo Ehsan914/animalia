@@ -1,2 +1,4 @@
 # Local design experiments, not part of the site.
 design-demo/
+.vercel
+.env*

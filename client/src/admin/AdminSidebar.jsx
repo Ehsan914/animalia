@@ -14,7 +14,10 @@ export default function AdminSidebar({ onNavigate }) {
         <aside className="side on-navy" id="admin-side" aria-label="Admin">
             <div className="side-head">
                 <img src="/logo.svg" alt="" width="140" height="40" />
-                <span>Admin panel</span>
+                {/* Spaced to end exactly under the logo's paw, whatever the font measures. */}
+                <svg className="side-label" viewBox="0 0 140 12" width="140" height="12">
+                    <text x="0" y="10" textLength="140" lengthAdjust="spacing">ADMIN PANEL</text>
+                </svg>
             </div>
             <nav className="side-nav">
                 {ADMIN_NAV.map((item) => {
