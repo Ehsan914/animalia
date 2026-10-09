@@ -143,6 +143,17 @@ describe("appointments", () => {
         expect(body.message).toMatch(/^serviceIds:/);
     });
 
+    it("books a request without an email", async () => {
+        const service = await createService();
+        const { email: _omitted, ...withoutEmail } = requestInput([service.id]);
+
+        const { body: missing } = await publicApi.post("/api/appointment").send(withoutEmail).expect(201);
+        const { body: blank } = await publicApi.post("/api/appointment").send(requestInput([service.id], { email: " " })).expect(201);
+
+        expect(missing.email).toBe("");
+        expect(blank.email).toBe("");
+    });
+
     it("rejects an invalid email or date", async () => {
         const service = await createService();
         await publicApi.post("/api/appointment").send(requestInput([service.id], { email: "nope" })).expect(400);

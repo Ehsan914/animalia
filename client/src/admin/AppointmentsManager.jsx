@@ -24,7 +24,7 @@ const COLUMNS = [
 const formFields = (serviceOptions) => [
     { name: "name",       label: "Owner Name",   required: true, max: 100 },
     { name: "phone",      label: "Phone Number", type: "tel", required: true, max: 30, half: true, placeholder: "+8801…" },
-    { name: "email",      label: "Email",        type: "email", required: true, half: true },
+    { name: "email",      label: "Email",        type: "email", half: true },
     { name: "pet_name",   label: "Pet Name",     required: true, max: 100 },
     { name: "species",    label: "Species",      type: "options", required: true, options: SPECIES_OPTIONS },
     { name: "date",       label: "Date",         type: "date", required: true, half: true },
@@ -104,7 +104,7 @@ const AppointmentsManager = () => {
                             <Fact label="Pet name">{a.pet_name} <span className="muted">· {a.species}</span></Fact>
                             <Fact label="Owner">{a.name}</Fact>
                             <Fact label="Phone"><a href={`tel:${a.phone}`}>{localPhone(a.phone)}</a></Fact>
-                            <Fact label="Email" wide><a href={`mailto:${a.email}`}>{a.email}</a></Fact>
+                            <Fact label="Email" wide>{a.email ? <a href={`mailto:${a.email}`}>{a.email}</a> : "—"}</Fact>
                             <Fact label="Date">{formatLongDay(a.date)}</Fact>
                             <Fact label="Time">{formatTime(a.date)}</Fact>
                         </dl>
