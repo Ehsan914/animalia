@@ -42,12 +42,17 @@ describe("bookingFromQuery", () => {
 describe("validateBooking", () => {
     it("lists every missing field in form order", () => {
         expect(Object.keys(validateBooking(EMPTY_BOOKING, { hasSpamToken: false }))).toEqual([
-            "petName", "services", "when", "ownerName", "phone", "email", "spam",
+            "petName", "services", "when", "ownerName", "phone", "spam",
         ])
     })
 
     it("accepts a complete booking", () => {
         expect(validateBooking(FILLED, { hasSpamToken: true })).toEqual({})
+    })
+
+    it("treats the email as optional but checks it when given", () => {
+        expect(validateBooking({ ...FILLED, email: " " }, { hasSpamToken: true })).toEqual({})
+        expect(validateBooking({ ...FILLED, email: "nope" }, { hasSpamToken: true }).email).toMatch(/name@example\.com/)
     })
 
     it("asks for the animal when Other is picked", () => {
@@ -92,5 +97,11 @@ describe("whatsAppMessage", () => {
         expect(message).toContain("*Preferred Time:* 11:00 AM")
         expect(message).not.toContain("Additional Notes")
         expect(whatsAppMessage({ ...FILLED, notes: "Shy" }, context)).toMatch(/\*Additional Notes:\* Shy$/)
+    })
+
+    it("leaves out the email line when none was given", () => {
+        const context = { serviceTitles: ["Vaccinations"], dayLabel: "Saturday 10 October" }
+        expect(whatsAppMessage(FILLED, context)).toContain("*Email:* tanvir@example.com")
+        expect(whatsAppMessage({ ...FILLED, email: "" }, context)).not.toContain("Email")
     })
 })

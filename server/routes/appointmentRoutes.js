@@ -13,7 +13,7 @@ const serviceIds = z.array(z.coerce.number().int().positive()).max(50, "too many
 const appointmentFields = {
     name: text(100),
     phone: text(30),
-    email: z.string().trim().pipe(z.email("must be a valid email")),
+    email: z.string().trim().pipe(z.union([z.literal(""), z.email("must be a valid email")])).default(""),
     pet_name: text(100),
     species: text(50),
     date: z.coerce.date(),

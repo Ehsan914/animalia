@@ -72,7 +72,8 @@ export const validateBooking = (booking, { hasSpamToken }) => {
     if (!BD_PHONE.test(phone)) {
         errors.phone = phone ? "Use a Bangladeshi mobile number, e.g. 01712-345678." : "Add a phone number for WhatsApp."
     }
-    if (!EMAIL.test(booking.email.trim())) errors.email = "Add an email like name@example.com."
+    const email = booking.email.trim()
+    if (email && !EMAIL.test(email)) errors.email = "Use an email like name@example.com."
     if (!hasSpamToken) errors.spam = "Wait for the spam check to finish, then send again."
     return errors
 }
@@ -100,7 +101,7 @@ export const whatsAppMessage = (booking, { serviceTitles, dayLabel }) =>
         "",
         `*Owner Name:* ${booking.ownerName.trim()}`,
         `*Phone:* ${booking.phone.trim()}`,
-        `*Email:* ${booking.email.trim()}`,
+        ...(booking.email.trim() ? [`*Email:* ${booking.email.trim()}`] : []),
         "",
         `*Services Requested:* ${serviceTitles.join(", ")}`,
         `*Preferred Date:* ${dayLabel}`,

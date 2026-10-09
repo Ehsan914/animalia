@@ -27,6 +27,7 @@ export default function OwnerStep({ booking, errors, onField }) {
                 <Field
                     id="email"
                     label="Email"
+                    optional
                     value={booking.email}
                     onChange={onField}
                     error={errors.email}
